@@ -4,6 +4,8 @@ from flask import render_template, jsonify, request
 from flask_app.config.mysqlconnection import connectToMySQL
 from datetime import date
 
+#TODO refactor db calls into model methods
+
 @app.get("/search")
 def search():
     connection = connectToMySQL("terminal_archive")
@@ -28,7 +30,12 @@ def search():
 def filter():
     form = request.form
     query = f'''
-            SELECT terminals.name as "terminal", ssls.name AS "ssl", containers.size as "container", availabilities.type as "available",  availabilities.created_at AS "available_on"
+            SELECT 
+            terminals.name as "terminal", 
+            ssls.name AS "ssl", 
+            containers.size as "container", 
+            availabilities.type as "available", 
+            availabilities.created_at AS "available_on"
             FROM availabilities
             JOIN partnerships ON partnerships.id = availabilities.partnership_id
             JOIN terminals ON partnerships.terminal_id = terminals.id
@@ -39,8 +46,8 @@ def filter():
             AND "{form.get('end_date') or date.today()}"
             '''
     data = {}
-    for key in request.form:
-        data[key] = request.form.getlist(key)
+    for key in form:
+        data[key] = form.getlist(key)
     data.pop('start_date')
     data.pop('end_date')
     if data.get('type'):
