@@ -5,6 +5,7 @@ from flask_app.config.mysqlconnection import connectToMySQL
 from datetime import date
 
 #TODO refactor db calls into model methods
+#TODO use template inheritance to avoid duplicate html
 
 @app.get("/search")
 def search():

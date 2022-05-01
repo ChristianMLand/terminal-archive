@@ -14,13 +14,15 @@ INSERT INTO availabilities (partnership_id, container_id, type)
 VALUES (3, 1, "drop,pick"), (3, 2, "drop,pick"), (3, 3, "drop,pick"), (3, 4, "drop,pick"), (3, 5, "drop,pick"), (3, 6, "drop,pick"), (3, 7, "drop,pick");
 
 
-SELECT terminals.name as "terminal", ssls.name AS "ssl", containers.size as "container", availabilities.type as "available",  availabilities.created_at AS "available_on"
-FROM availabilities
-JOIN partnerships ON partnerships.id = availabilities.partnership_id
-JOIN terminals ON partnerships.terminal_id = terminals.id
-JOIN ssls ON partnerships.ssl_id = ssls.id
-JOIN containers ON availabilities.container_id = containers.id
-WHERE 2022-04-30 <= DATE(availabilities.created_at) >= 2022-04-30
-AND ssls.id in (1, 2, 3);
+select terminals.name as "terminal", ssls.name as "ssl", containers.size as "container", availabilities.type as "available",  availabilities.created_at as "available_on"
+            from availabilities
+            join partnerships on partnerships.id = availabilities.partnership_id
+            join terminals on partnerships.terminal_id = terminals.id
+            join ssls on partnerships.ssl_id = ssls.id
+            join containers on availabilities.container_id = containers.id
+            where date(created_at)
+            between "2022-05-01"
+            and "2022-05-01"
+            ;
 
 SELECT * FROM availabilities;
