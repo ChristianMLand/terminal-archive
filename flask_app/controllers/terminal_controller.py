@@ -76,11 +76,15 @@ def admin():
     connection = connectToMySQL("terminal_archive")
     query = "SELECT * FROM terminals;"
     terminals = connection.query_db(query)
+
+    query = "SELECT * FROM users;"
+    users = connection.query_db(query)
     connection.connection.close()
 
     context = {
         "logged_user" : logged_user,
-        "terminals" : terminals
+        "terminals" : terminals,
+        "users" : users
     }
     #TODO retrieve all terminals auth data to prefill forms
     #TODO retrieve users with admin level 2 to prefill whitelist form
@@ -103,7 +107,14 @@ def settings():
         return redirect('/admin')
     return render_template("admin.html", logged_user=logged_user)
 
-@app.post("/terminal/update")
+@app.post("/terminals/update")
 def update_terminal():
-    #TODO update terminal auth info in db
+    connection = connectToMySQL("terminal_archive")
+    query = '''
+            UPDATE terminals 
+            SET auth_email=%(auth_email)s, auth_password=%(auth_password)s
+            WHERE id=%(terminal_id)s;
+            '''
+    connection.query_db(query, request.form)
+    connection.connection.close()
     return redirect('/admin')

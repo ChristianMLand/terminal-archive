@@ -29,10 +29,10 @@
                 <a class="nav-link active" href="/settings">Settings</a>
             </li>
         </ul>
-        <p>Welcome, {{logged_user.email}}</p>
+        <span class="navbar-text">Welcome, {{logged_user.email}}</span>
         <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
     </nav>
-    <main class="d-flex justify-content-between border p-4 col-6 mx-auto">
+    <main class="d-flex justify-content-between col-6 mx-auto">
         <div class="d-flex align-items-start">
             <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill"
@@ -43,16 +43,15 @@
                     aria-selected="false">Manage User Access</button>
                 <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill"
                     data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
-                    aria-selected="false">User Settings</button>
+                    aria-selected="false">Account Settings</button>
             </div>
             <div class="tab-content" id="v-pills-tabContent">
                 <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
                     aria-labelledby="v-pills-home-tab">
-                    <form id="terminal-form" action="">
+                    <form id="terminal-form" method="post" action="/terminals/update">
                         <div class="mb-3">
                             <label class="form-label">Terminal</label>
-                            <select name="terminal" class="form-select">
-                                <option value="1">test</option>
+                            <select name="terminal_id" class="form-select">
                                 {% for terminal in terminals %}
                                 <option value="{{terminal.id}}">{{terminal.name}}</option>
                                 {% endfor %}
@@ -60,25 +59,48 @@
                         </div>
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="exampleInputEmail1">
+                            <input type="email" name="auth_email" class="form-control" id="exampleInputEmail1">
                         </div>
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Password</label>
-                            <input type="text" class="form-control" id="exampleInputPassword1">
+                            <input type="text" name="auth_password" class="form-control" id="exampleInputPassword1">
                         </div>
                         <button type="submit" class="btn btn-outline-primary">Submit</button>
                     </form>
                 </div>
                 <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
-                    <form action="">
-                        <label for=""></label>
-                        <textarea class="form-control" name="" id="" cols="30" rows="10"></textarea>
+                    <form action="/" class="row align-items-center justify-content-between">
+                        <div class="col col-10 mb-3">
+                            <label for="" class="form-label">Add User Access</label>
+                            <div class="input-group mb-3">
+                                <input type="text" name="email" class="form-control" placeholder="Email" aria-label="Recipient's email"
+                                    aria-describedby="basic-addon2">
+                                <span class="input-group-text" id="basic-addon2">@odysseylogistics.com</span>
+                            </div>
+                        </div>
+                        <div class="col col-2">
+                            <button class="btn btn-outline-success">Add</button>
+                        </div>
                     </form>
+                    <span class="d-flex alert alert-success">Granted user access with password: 6WRsHn6w</span>
+                    <p>Users with access</p>
+                    <ul class="list-group">
+                        {% for user in users %}
+                        <li class="list-group-item d-flex gap-4 justify-content-between align-items-center">
+                            <span>{{user.email}} </span>
+                            <select name="account_level" class="form-select">
+                                <option value="1">Basic</option>
+                                <option value="2">Admin</option>
+                                <option value="3">Owner</option>
+                            </select>
+                            <a href="/remove-access/{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
                 <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
                     <form action="">
-                        <label for=""></label>
-                        <textarea class="form-control" name="" id="" cols="30" rows="10"></textarea>
+                        TODO add change password field
                     </form>
                 </div>
             </div>

@@ -16,5 +16,6 @@ terminalSelect.addEventListener('change', e => {
     console.log(terminalEmail)
 })
 
+//TODO change event listener for users with
 
 
