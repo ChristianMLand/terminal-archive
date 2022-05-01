@@ -1,0 +1,12 @@
+table {
+    text-transform:capitalize;
+    background: white;
+}
+
+table.table {
+    z-index: -2;
+}
+
+footer.fixed-bottom {
+    z-index: -1;
+}

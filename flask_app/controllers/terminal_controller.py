@@ -1,16 +1,20 @@
+from cmath import log
 import json
 from flask_app import app
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, redirect, session
 from flask_app.config.mysqlconnection import connectToMySQL
 from datetime import date
+from flask_app.models.user_model import User
 
 #TODO refactor db calls into model methods
 #TODO use template inheritance to avoid duplicate html
 
 @app.get("/search")
 def search():
-    connection = connectToMySQL("terminal_archive")
+    if 'user_id' not in session:
+        return redirect('/')
 
+    connection = connectToMySQL("terminal_archive")
     query = "SELECT id, name FROM terminals;"
     terminals = connection.query_db(query)
     query = "SELECT id, name FROM ssls;"
@@ -22,7 +26,8 @@ def search():
     context = {
         "terminals" : terminals,
         "ssls" : ssls,
-        "containers" : containers
+        "containers" : containers,
+        "logged_user" : User.get_user_by_id(id=session['user_id'])
     }
 
     return render_template("search.html", **context)
@@ -60,3 +65,45 @@ def filter():
     results = connection.query_db(query)
     connection.connection.close()
     return jsonify(data=results)
+
+@app.get("/admin")
+def admin():
+    if "user_id" not in session:
+        return redirect("/")
+    logged_user = User.get_user_by_id(id=session['user_id'])
+    if logged_user.account_level < 3:
+        return redirect('/settings')
+    connection = connectToMySQL("terminal_archive")
+    query = "SELECT * FROM terminals;"
+    terminals = connection.query_db(query)
+    connection.connection.close()
+
+    context = {
+        "logged_user" : logged_user,
+        "terminals" : terminals
+    }
+    #TODO retrieve all terminals auth data to prefill forms
+    #TODO retrieve users with admin level 2 to prefill whitelist form
+    return render_template("admin.html", **context)
+
+@app.get('/terminals/<int:id>')
+def get_terminal(id):
+    query = "SELECT * FROM terminals WHERE id=%(id)s;"
+    connection = connectToMySQL("terminal_archive")
+    terminal = connection.query_db(query, {"id": id})
+    connection.connection.close()
+    return jsonify(terminal=terminal[0])
+
+@app.get("/settings")
+def settings():
+    if "user_id" not in session:
+        return redirect("/")
+    logged_user = User.get_user_by_id(id=session['user_id'])
+    if logged_user.account_level == 3:
+        return redirect('/admin')
+    return render_template("admin.html", logged_user=logged_user)
+
+@app.post("/terminal/update")
+def update_terminal():
+    #TODO update terminal auth info in db
+    return redirect('/admin')

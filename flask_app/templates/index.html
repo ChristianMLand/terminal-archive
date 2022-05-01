@@ -16,23 +16,26 @@
         <a href="/" class="navbar-brand h1 mx-5">Terminal Archive</a>
         <ul class="navbar-nav flex-row gap-5">
             <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="/search">Search Archive</a>
+                <a class="nav-link" aria-current="page" href="/search">Search</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link disabled" href="/admin">Admin Settings</a>
+                <a class="nav-link" href="/settings">Settings</a>
             </li>
         </ul>
-        <button class="btn btn-outline-danger mx-5" type="button">Logout</button>
+        <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
     </nav>
     <main class="d-flex align-items-center justify-content-center">
-        <form class="col-3 border p-4 rounded">
+        <form method="post" action="login" class="col-3 border p-4 rounded">
             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Email" aria-label="Recipient's email"
+                <input type="text" name="email" class="form-control" placeholder="Email" aria-label="Recipient's email"
                     aria-describedby="basic-addon2">
-                <span class="input-group-text" id="basic-addon2">@example.com</span>
+                <span class="input-group-text" id="basic-addon2">@odysseylogistics.com</span>
             </div>
-            <input type="password" class="form-control" placeholder="password" id="exampleInputPassword1">
+            <input type="password" name="password" class="form-control" placeholder="password" id="exampleInputPassword1">
             <button type="submit" class="btn btn-outline-success mt-3 mx-auto d-block">Login</button>
+            {% for msg in get_flashed_messages() %}
+            <p>{{msg}}</p>
+            {% endfor %}
         </form>
     </main>
     <footer class="p-3 text-center fixed-bottom bg-light border mt-5">

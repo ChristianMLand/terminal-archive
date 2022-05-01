@@ -1,9 +1,7 @@
 const form = document.querySelector("form")
 const tbody = document.querySelector("tbody")
 
-
 $('.selectpicker').selectpicker();
-
 
 form.addEventListener('submit', e => {
     e.preventDefault();
