@@ -21,15 +21,7 @@
 <body>
     <nav class="navbar navbar-light bg-light p-4 border mb-5">
         <a href="/" class="navbar-brand h1 mx-5">Terminal Archive</a>
-        <ul class="navbar-nav flex-row gap-5">
-            <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="/search">Search</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/settings">Settings</a>
-            </li>
-        </ul>
-        <span class="navbar-text">Welcome, {{logged_user.email}}</span>
+        <a href="/settings" class="navbar-text">Welcome, {{logged_user.email}}</a>
         <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
     </nav>
     <main class="d-flex justify-content-between col-6 mx-auto">
@@ -46,8 +38,7 @@
                     aria-selected="false">Account Settings</button>
             </div>
             <div class="tab-content" id="v-pills-tabContent">
-                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
-                    aria-labelledby="v-pills-home-tab">
+                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
                     <form id="terminal-form" method="post" action="/terminals/update">
                         <div class="mb-3">
                             <label class="form-label">Terminal</label>
@@ -59,17 +50,17 @@
                         </div>
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Email address</label>
-                            <input type="email" name="auth_email" class="form-control" id="exampleInputEmail1">
+                            <input type="email" value="{{terminals[0].auth_email}}" name="auth_email" class="form-control" id="exampleInputEmail1">
                         </div>
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Password</label>
-                            <input type="text" name="auth_password" class="form-control" id="exampleInputPassword1">
+                            <input type="text" value="{{terminals[0].auth_password}}" name="auth_password" class="form-control" id="exampleInputPassword1">
                         </div>
                         <button type="submit" class="btn btn-outline-primary">Submit</button>
                     </form>
                 </div>
                 <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
-                    <form action="/" class="row align-items-center justify-content-between">
+                    <form id="access-form" class="row align-items-center justify-content-between">
                         <div class="col col-10 mb-3">
                             <label for="" class="form-label">Add User Access</label>
                             <div class="input-group mb-3">
@@ -82,18 +73,19 @@
                             <button class="btn btn-outline-success">Add</button>
                         </div>
                     </form>
-                    <span class="d-flex alert alert-success">Granted user access with password: 6WRsHn6w</span>
+                    <span id="access-granted-alert"></span>
                     <p>Users with access</p>
-                    <ul class="list-group">
+                    <ul id="user-list" class="list-group">
+                        {% set levels = ["Basic", "Admin"] %}
                         {% for user in users %}
-                        <li class="list-group-item d-flex gap-4 justify-content-between align-items-center">
-                            <span>{{user.email}} </span>
-                            <select name="account_level" class="form-select">
-                                <option value="1">Basic</option>
-                                <option value="2">Admin</option>
-                                <option value="3">Owner</option>
+                        <li class="list-group-item d-flex gap-4 align-items-center">
+                            <span class="me-auto w-25">{{user.email}}</span>
+                            <select onchange="updateAccess(this)" data-user-id="{{user.id}}" name="account_level" class="w-25 form-select">
+                                {% for i in range(logged_user.account_level - 1) %}
+                                <option value="{{i + 1}}" {{"selected" if user.account_level == i + 1}}>{{levels[i]}}</option>
+                                {% endfor %}
                             </select>
-                            <a href="/remove-access/{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</a>
+                            <button onclick="removeAccess(this)" data-user-id="{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</button>
                         </li>
                         {% endfor %}
                     </ul>

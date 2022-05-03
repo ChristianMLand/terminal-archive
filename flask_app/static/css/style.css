@@ -2,7 +2,9 @@ table {
     text-transform:capitalize;
     background: white;
 }
-
+main {
+    margin-bottom: 100px !important;
+}
 table.table {
     z-index: -2;
 }

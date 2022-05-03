@@ -21,18 +21,11 @@
 <body>
     <nav class="p-4 navbar navbar-light bg-light border mb-5">
         <a href="/" class="navbar-brand h1 mx-5">Terminal Archive</a>
-        <ul class="navbar-nav flex-row gap-5">
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/search">Search</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/settings">Settings</a>
-            </li>
-        </ul>
-        <span class="navbar-text">Welcome, {{logged_user.email}}</span>
+        <a href="/settings" class="navbar-text">Welcome, {{logged_user.email}}</a>
         <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
     </nav>
     <main class="d-flex h-75 w-75 mx-auto flex-column align-items-center justify-content-center">
+        <button onclick="fetchCurrentData()" class="btn mb-3 btn-outline-danger">Fetch Current Data</button>
         <form action="filter" method="post" class="row row-cols-lg-auto g-3 align-items-center justify-content-center">
             <div class="col">
                 <select name="terminal_id" class="selectpicker border" multiple title="Terminals" data-actions-box="true">
@@ -56,28 +49,29 @@
                 </select>
             </div>
             <div class="col">
-                <select name="type" class="selectpicker border" multiple title="Types Available" data-actions-box="true">
+                <select name="type" class="selectpicker border" multiple title="Availability" data-actions-box="true">
                     <option value="pick">Picks</option>
                     <option value="drop">Drops</option>
                 </select>
             </div>
             <div class="col d-flex gap-1 align-items-center">
-                <input name="start_date" class="form-control" type="date">
+                <input name="start_date" class="form-control" type="datetime-local">
                 <span>to</span>
-                <input name="end_date" class="form-control" type="date">
+                <input name="end_date" class="form-control" type="datetime-local">
             </div>
             <div class="col">
                 <button type="submit" class="btn btn-outline-primary">Search</button>
             </div>
         </form>
+
         <table class="table table-hover table-bordered mt-3 w-75">
             <thead>
                 <tr>
                     <th>Terminal</th>
                     <th>SSL</th>
-                    <th>Container</th>
-                    <th>Available On</th>
-                    <th>Available</th>
+                    <th>Container Size</th>
+                    <th>Available During</th>
+                    <th>Available For</th>
                 </tr>
             </thead>
             <tbody></tbody>

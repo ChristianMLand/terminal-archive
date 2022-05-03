@@ -21,3 +21,9 @@ form.addEventListener('submit', e => {
     })
     .catch(err => console.error(err))
 })
+
+function fetchCurrentData() {
+    axios.get('/fetch-new-data')
+    .then(console.log)
+    .catch(console.error);
+}

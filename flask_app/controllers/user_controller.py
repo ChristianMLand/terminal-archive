@@ -1,3 +1,4 @@
+import json
 from sqlite3 import connect
 from flask_app import app, bcrypt
 from flask import render_template, redirect, session, jsonify, request, flash
@@ -14,7 +15,6 @@ def index():
 @app.post('/login')
 def login():
     form = {**request.form}
-    form['email'] += "@odysseylogistics.com"
     query = "SELECT * FROM users WHERE email = %(email)s;"
     connection = connectToMySQL("terminal_archive")
     user = connection.query_db(query, form)
@@ -36,37 +36,73 @@ def change_password():
 
 @app.post('/grant-access')
 def grant_access():
-    data = {}
-    data['emails'] = request.form.getlist('emails')
-    data['acc_level'] = request.form.get('acc_level')
-    pw = generate_password()
-    data['pw'] = bcrypt.generate_password_hash(pw)
+    if 'user_id' not in session:
+        return jsonify(status="error")
+    logged_user = User.get_user_by_id(id=session['user_id'])
+    if logged_user.account_level < 2:
+        return jsonify(status="error")
+    password = generate_password()
+    data = {
+        "email" : request.form.get('email'),
+        "hash" :  bcrypt.generate_password_hash(password)
+    }
     query = '''
             INSERT INTO users
-            (email, password_hash, account_level)
+            (email, password_hash)
             VALUES
-            (%(email)s, %(pw)s, %(acc_level)s);
+            (%(email)s, %(hash)s);
             '''
     connection = connectToMySQL("terminal_archive")
-    connection.query_db(query, data)
+    user_id = connection.query_db(query, data)
     connection.connection.close()
 
-    #TODO send email to email with pw
-    return redirect('/admin')
+    print(password)
+
+    return jsonify(password=password, id=user_id, email=data['email'])
 
 
 @app.post('/update-access')
 def update_access():
-    pass
+    if 'user_id' not in session:
+        return jsonify(status="error")
+    logged_user = User.get_user_by_id(id=session['user_id'])
+    if logged_user.account_level <= int(request.json.get('account_level')):
+        return jsonify(status="error")
+    query = '''
+            UPDATE users
+            SET account_level = %(account_level)s
+            WHERE users.id = %(id)s;
+            '''
+    connection = connectToMySQL("terminal_archive")
+    connection.query_db(query, request.json)
+    connection.connection.close()
 
-@app.get('/generate-password')
+    return jsonify(status="success")
+
+@app.post('/remove-access')
+def delete_access():
+    if 'user_id' not in session:
+        return jsonify(status="error")
+    logged_user = User.get_user_by_id(id=session['user_id'])
+    user_to_remove = User.get_user_by_id(id=request.json.get('id'))
+    if logged_user.account_level <= user_to_remove.account_level:
+        return jsonify(status="error")
+    query = '''
+            DELETE FROM users
+            WHERE id = %(id)s;
+            '''
+    connection = connectToMySQL("terminal_archive")
+    connection.query_db(query, request.json)
+    connection.connection.close()
+
+    return jsonify(status="success")
+
 def generate_password():
     characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$-"
     gen_pass = ""
     while len(gen_pass) < 8:
         gen_pass += choice(characters)
-    pass_hash = bcrypt.generate_password_hash(gen_pass)
-    return jsonify(password=gen_pass, hash=str(pass_hash))
+    return gen_pass
 
 @app.get('/logout')
 def logout():
