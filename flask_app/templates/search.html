@@ -25,7 +25,10 @@
         <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
     </nav>
     <main class="d-flex h-75 w-75 mx-auto flex-column align-items-center justify-content-center">
-        <button onclick="fetchCurrentData()" class="btn mb-3 btn-outline-danger">Fetch Current Data</button>
+        <div id="actions" class="mb-3 d-flex gap-4">
+            <button onclick="fetchCurrentData()" class="btn btn-outline-danger">Fetch Current Data</button>
+            <a href="{{url_for('static', filename='output.xlsx')}}" target="_blank" class="btn btn-outline-info">Download as Excel</a>
+        </div>
         <form action="filter" method="post" class="row row-cols-lg-auto g-3 align-items-center justify-content-center">
             <div class="col">
                 <select name="terminal_id" class="selectpicker border" multiple title="Terminals" data-actions-box="true">

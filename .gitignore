@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 test_queries.sql
+Pipfile.lock
+terminal_archive.mwb.bak
+output.xlsx

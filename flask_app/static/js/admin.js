@@ -65,5 +65,3 @@ function removeAccess(elem) {
     })
     .catch(console.error)
 }
-
-

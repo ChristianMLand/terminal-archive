@@ -1,4 +1,3 @@
-from sqlite3 import connect
 import requests # not used just yet
 from bs4 import BeautifulSoup
 import xlsxwriter
@@ -11,6 +10,27 @@ def filter_down_tag(tag):
     if tag.span:
         tag = tag.span
     return tag
+
+def format_table_dict(table_dict):
+    new_table = {}
+    line_types = None
+    for i, line in enumerate(table_dict):
+        row = table_dict[line]
+        if i == 0:
+            line_types = row
+        else:
+            new_table[line] = { "Pick" : [], "Drop" : [] }
+            for j, val in enumerate(row):
+                if val == "YES":
+                    cont_type = line_types[j].split(" ")[0].replace("'", "")
+                    if cont_type == "20":
+                        cont_type = "20DR"
+                    if cont_type == "Reefer":
+                        new_table[line]["Drop" if j % 2 == 0 else "Pick"].append("20RFR")
+                        new_table[line]["Drop" if j % 2 == 0 else "Pick"].append("40RFR")
+                    else:
+                        new_table[line]["Drop" if j % 2 == 0 else "Pick"].append(cont_type)
+    return new_table
 
 #TODO Rewrite all parsers to go straight to db format
 '''
@@ -58,7 +78,56 @@ def parse_t18_into_dict(soup):
     return format_table_dict(table_dict)
 
 def parse_t30_into_dict(soup):
-    pass
+    table = soup.find_all("table")[3].tbody
+    rows = table.find_all("tr")
+
+    data = {}
+
+    #TODO make this dynamic
+
+    # h2 = soup.find_all("h2")[2]
+    # h2 = h2.strong
+    # h2_words = h2.decode_contents().split(" ")
+    # for i, word in enumerate(h2_words):
+    #     if word in ["20FR", "40FR", "20OT", "40OT", "20HT", "40HT"]:
+    #         h2_words[i] = "Special"
+    # data[h2_words[0]] = {
+    #     "Pick" : list({h2_words[-1], h2_words[-3]}),
+    #     "Drop" : []
+    # }
+
+    for tr in rows[1:]:
+        table_dict = {
+            "Pick" : [],
+            "Drop" : []
+        }
+        line = None
+        for i,td in enumerate(tr.find_all("td")):
+            if td.p:
+                td = td.p
+            if td.strong:
+                td = td.strong
+            if len(td.find_all("span")) > 1:
+                tds = []
+                for span in td.find_all("span"):
+                    tds.append(span.decode_contents())
+                for td in tds:
+                    line = td
+                    data[line] = table_dict
+            else:
+                if td.span:
+                    td = td.span
+                if i == 0:
+                    line = td.decode_contents()
+                    if line not in data:
+                        data[line] = table_dict
+                else:
+                    for cont in td.decode_contents().split(','):
+                        if cont != "NONE":
+                            table_dict["Drop"].append(cont)
+                        elif line in data and not data[line]['Pick']:
+                            data.pop(line)
+    return data
 
 def parse_t5_into_dict(soup):
     tables = soup.find_all("table")
@@ -146,26 +215,7 @@ def parse_husky_into_dict(soup):
                     table_dict[line]["Drop" if i % 2 == 0 else "Pick"].append(cont_type)
     return table_dict
 
-def format_table_dict(table_dict):
-    new_table = {}
-    line_types = None
-    for i, line in enumerate(table_dict):
-        row = table_dict[line]
-        if i == 0:
-            line_types = row
-        else:
-            new_table[line] = { "Pick" : [], "Drop" : [] }
-            for j, val in enumerate(row):
-                if val == "YES":
-                    cont_type = line_types[j].split(" ")[0].replace("'", "")
-                    if cont_type == "20":
-                        cont_type = "20DR"
-                    if cont_type == "Reefer":
-                        new_table[line]["Drop" if j % 2 == 0 else "Pick"].append("20RFR")
-                        new_table[line]["Drop" if j % 2 == 0 else "Pick"].append("40RFR")
-                    else:
-                        new_table[line]["Drop" if j % 2 == 0 else "Pick"].append(cont_type)
-    return new_table
+
 
 parsers = {
     "t18" : parse_t18_into_dict,
@@ -176,7 +226,6 @@ parsers = {
 }
 
 def request_terminal(terminal):
-    
     if terminal['auth_required']:
         with requests.session() as s:
             s.post(terminal['auth_url'], data={"j_username" : terminal['auth_email'], "j_password" : terminal['auth_password']})
@@ -185,12 +234,9 @@ def request_terminal(terminal):
         r = requests.get(terminal['data_url'])
     soup = BeautifulSoup(r.content, "html.parser")
     parsed = parsers[terminal['name']](soup)
-
-    # json_object = json.dumps(parsed, indent = 4)
-    # # print(json_object)
     return parsed
 
-def convertToDBFormat(data):
+def convert_to_db_format(data):
     output = {}
     for line in data:
         output[line] = {}
@@ -229,38 +275,29 @@ def update_db(terminal, data):
             connection.query_db(query, availability)
     connection.connection.close()
 
-def write_to_worksheet(worksheet, formatted_table):
-    table_count = 0
-    for i, line in enumerate(formatted_table):
-        for j, key in enumerate(formatted_table[line]):
-            worksheet.write(0, table_count * 2 + i + j, f"{line} {key}")
-            for k, val in enumerate(formatted_table[line][key]):
-                worksheet.write(k + 1, table_count * 2 + i + j, val)
-        table_count += 1
-
-def update_worksheet(table):#update to google doc later
-    workbook = xlsxwriter.Workbook("output.xlsx")
-    worksheet = workbook.add_worksheet("Pick and Drop")
-    print(table)
-    write_to_worksheet(worksheet, table)
+def write_to_worksheet(data):
+    workbook = xlsxwriter.Workbook("flask_app/static/output.xlsx")
+    worksheet = workbook.add_worksheet("Picks and Drops")
+    border = workbook.add_format({"border" : 1, "align" : "center"})
+    gray = workbook.add_format({
+        "border" : 1,
+        "align" : "center",
+        "bg_color" : "gray",
+        "font_color" : "white"
+    })
+    
+    for i, key in enumerate(data[0]):
+        worksheet.write(0, i, key, gray)
+    for i, availability in enumerate(data):
+        for j, key in enumerate(availability):
+            value = str(availability[key])
+            worksheet.write(i+1, j, value)
+            worksheet.set_column(j, j, len(value) + 10, border)
     workbook.close()
 
-def parse_terminal_and_update_DB(terminal):
+def parse_terminal(terminal):
     data = request_terminal(terminal)
     if data:
-        data = convertToDBFormat(data)
+        data = convert_to_db_format(data)
         update_db(terminal, data)
         print(f"parsed {terminal['name']}")
-    
-def main():
-    query = "SELECT * FROM terminals;"
-    connection = connectToMySQL("terminal_archive")
-    terminals = connection.query_db(query)
-    connection.connection.close()
-
-    for terminal in terminals:
-        parse_terminal_and_update_DB(terminal)
-
-
-if __name__ == "__main__":
-    main()

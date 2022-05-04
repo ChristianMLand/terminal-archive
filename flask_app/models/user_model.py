@@ -10,8 +10,6 @@ class User:
     @classmethod
     def get_user_by_id(cls, **data):
         query = "SELECT * FROM users WHERE id=%(id)s;"
-        connection = connectToMySQL("terminal_archive")
-        user = connection.query_db(query, data)
-        connection.connection.close()
-        if user:
-            return cls(user[0])
+        results = connectToMySQL("terminal_archive").query_db(query, data)
+        if results:
+            return cls(results[0])
