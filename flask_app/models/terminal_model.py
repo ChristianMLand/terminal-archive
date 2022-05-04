@@ -62,7 +62,7 @@ class T30Parser(TerminalParser):
     @staticmethod
     def parse(soup):
         #TODO build this 
-        pass
+        return {}
 
 class T5Parser(TerminalParser):
     @staticmethod

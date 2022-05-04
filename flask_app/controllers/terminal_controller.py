@@ -8,7 +8,6 @@ from flask_app.models.user_model import User
 from flask_app.models.terminal_model import Terminal
 from flask_app.models.ssl_model import SSL
 from flask_app.models.container_model import Container
-# from flask_app.config.parser import parse_terminal, write_to_worksheet
 
 #TODO refactor db calls into model methods
 #TODO use template inheritance to avoid duplicate html
