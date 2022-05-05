@@ -37,9 +37,15 @@ class Availability:
         for key in data:
             if key in ['type','terminal_id','ssl_id','container_id']:
                 data[key] = "','".join(data[key])
-        if data.get('type'):
-            query += 'AND TYPE LIKE "%%(type)s%"'
-        query += "AND " + "AND ".join(f'{key} in (%({key})s) ' for key in data if key not in ['type','start_date','end_date'])
+        print(data.get('type'))
+        if data.get('type') and data['type'] in 'pick,drop':
+            data['type'] = f"%{data['type']}%"
+            query += 'AND TYPE LIKE %(type)s '
+        wheres = ""
+        for key in data:
+            if key not in ['type','start_date','end_date']:
+                wheres += f"AND {key} in (%({key})s) "
+        query += wheres
         query += "ORDER BY created_at DESC;"
         print(query,data)
         results = connectToMySQL("terminal_archive").query_db(query, data)
@@ -47,6 +53,7 @@ class Availability:
 
     @staticmethod
     def create(terminal, data):
+        #TODO refactor so it does one giant insert query instead of hundreds of individual ones
         ssls = ssl_model.SSL.retrieve_all()
         containers = container_model.Container.retrieve_all()
 

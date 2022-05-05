@@ -51,7 +51,7 @@ def update_terminal():
     return redirect('/admin')
 
 #TODO provide better information in json response
-@app.get("/fetch-new-data")
+@app.get("/availabilites/fetch")
 def fetch_new_data():
     if "user_id" not in session:
         return jsonify(status="error")
@@ -60,7 +60,7 @@ def fetch_new_data():
         Availability.create(terminal, data)
     return jsonify(status="success")
 
-@app.post("/filter")
+@app.post("/availabilities/filter")
 def filter():
     availabilities = Availability.retrieve_all(request.form)
     write_to_worksheet(availabilities)

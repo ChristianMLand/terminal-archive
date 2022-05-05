@@ -5,7 +5,7 @@ $('.selectpicker').selectpicker();
 
 form.addEventListener('submit', e => {
     e.preventDefault();
-    axios.post('/filter', new FormData(form))
+    axios.post('/availabilities/filter', new FormData(form))
     .then(result => {
         tbody.innerHTML = ""
         const results = result.data.data
@@ -24,7 +24,7 @@ form.addEventListener('submit', e => {
 })
 
 function fetchCurrentData() {
-    axios.get('/fetch-new-data')
+    axios.get('/availabilites/fetch')
     .then(console.log)
     .catch(console.error);
 }
