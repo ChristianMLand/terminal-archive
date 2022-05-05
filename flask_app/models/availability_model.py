@@ -14,7 +14,6 @@ class Availability:
     @classmethod
     def retrieve_all(cls, form_data):
         data = {}
-
         query = '''
                 SELECT 
                 availabilities.id, 
@@ -53,17 +52,9 @@ class Availability:
 
     @staticmethod
     def create(terminal, data):
-        #TODO refactor so it does one giant insert query instead of hundreds of individual ones
         ssls = ssl_model.SSL.retrieve_all()
         containers = container_model.Container.retrieve_all()
-
-        query = '''
-                INSERT INTO availabilities
-                (terminal_id, ssl_id, container_id, type)
-                VALUES
-                (%(terminal_id)s, %(ssl_id)s, %(container_id)s, %(types)s);
-                '''
-
+        query = 'INSERT INTO availabilities (terminal_id, ssl_id, container_id, type) VALUES'
         for line in data:
             availability = {"terminal_id" : terminal.id}
             for ssl in ssls:
@@ -74,7 +65,9 @@ class Availability:
                     if cont in container.size:
                         availability['container_id'] = container.id
                         availability['types'] = ','.join(data[line][cont])
-                connectToMySQL("terminal_archive").query_db(query, availability)
+                query += f" ({availability['terminal_id']}, {availability['ssl_id']}, {availability['container_id']}, '{availability['types']}'),"
+        query = query[:-1] + ";"
+        connectToMySQL("terminal_archive").query_db(query)
     
     @property
     def json(self):
