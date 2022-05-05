@@ -20,6 +20,7 @@ def search():
         "logged_user" : User.retrieve_one(id=session['user_id'])
     }
     return render_template("search.html", **context)
+#--------------------------------------------------------------------------#
 #-------------------------Action Routes------------------------------------#
 @app.post("/terminals/update")#TODO update terminals/update to use ajax w jsonify
 def update_terminal():

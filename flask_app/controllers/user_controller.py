@@ -1,13 +1,11 @@
-from flask_app import app, bcrypt
-from flask import render_template, redirect, session, jsonify, request, flash
-
-from flask_app.config.mysqlconnection import connectToMySQL
+from flask_app import app
+from flask import render_template, redirect, session, jsonify, request
 from flask_app.models.user_model import User
 from flask_app.models.terminal_model import Terminal
 
 #-----------------------------------Display Routes--------------------------#
 @app.get("/")
-def index():
+def index():#TODO improve display of error messages in template
     if 'user_id' in session:
         return redirect('/search')
     return render_template("index.html")
