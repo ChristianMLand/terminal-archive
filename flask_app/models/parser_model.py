@@ -1,4 +1,4 @@
-from abc import ABC,abstractstaticmethod
+from abc import ABC,abstractmethod
 
 container_size_aliases = {
     "20" : ["20DR"],
@@ -9,14 +9,12 @@ container_size_aliases = {
     "HT" : ["Special"],
 }
 
-#TODO write helper methods for getting container sizes and ssl_names in abc class
-#TODO write helper method for getting availability type and storing in info_dict
-
 class TerminalParser(ABC):
-    @abstractstaticmethod
-    def parse() -> dict:
-        ...
-
+    def __init__(self):
+        self.container_sizes = []
+        self.ssl_names = []
+        self.data = {}
+    @staticmethod
     def get_parser(terminal_name) -> 'TerminalParser':
         terminals = {
             "t18" : T18Parser,
@@ -26,114 +24,100 @@ class TerminalParser(ABC):
             "husky" : HuskyParser
         }
         return terminals[terminal_name]()
+    def parse(self, soup):
+        tables = self.get_tables(soup)
+        for x, table in enumerate(tables):
+            rows = self.get_rows(table)
+            self.get_container_sizes(table)
+            self.get_ssl_names(rows)
+            print(self.container_sizes)
+            for i, tr in enumerate(rows):
+                info_dict = {}
+                for j, td in enumerate(self.get_tds(tr)):
+                    containers = [self.container_sizes[j]]
+                    if containers[0] in container_size_aliases:
+                        containers = container_size_aliases[containers[0]]
+                    for container in containers:
+                        td_content = self.clean_text(td)
+                        if td_content  == "YES" or td_content == "OPEN":
+                            availability_type = self.get_type(j if len(tables) == 1 else x)
+                            for line in self.ssl_names[i].split('/'):
+                                if line not in self.data:
+                                    self.data[line] = info_dict
+                                else:
+                                    info_dict = self.data[line]
+                            if container in info_dict:
+                                info_dict[container].append(availability_type)
+                            else:
+                                info_dict[container] = [availability_type]
+        return self.data
+    def clean_text(self, elem):
+        return elem.getText().replace("’ ","").replace("Pick","").replace(" Up", "").replace("Drop", "").replace("' ","").strip()
+    def get_type(self, index):
+        return "Pick" if index % 2 else "Drop"
+    def get_ssl_names(self, rows):
+        for tr in rows:
+            line = self.clean_text(tr.td).replace("YES","")
+            if line not in self.ssl_names:
+                self.ssl_names.append(line)
+    def get_tds(self, row):
+        return row.find_all("td")[1:]
+    @abstractmethod
+    def get_tables(self, soup):
+        ...
+    @abstractmethod
+    def get_rows(self, table):
+        ...
+    @abstractmethod
+    def get_container_sizes(self, table):
+        ...
 
 class T18Parser(TerminalParser):
-    @staticmethod
-    def parse(soup):
-        data = {}
-        table = soup.find_all("table")[1]
-        rows = table.find_all("tr")[1:14]
-        container_sizes = [td.getText().split(" ")[0].replace("'","").strip() for td in table.tr.find_all("td")[1:]]
-        ssl_names = [tr.td.getText().replace("YES","").strip() for tr in rows]
-        for i, tr in enumerate(rows):
-            info_dict = {}
-            for j, td in enumerate(tr.find_all('td')[1:]):
-                containers = [container_sizes[j]]
-                if containers[0] in container_size_aliases:
-                    containers = container_size_aliases[containers[0]]
-                for container in containers:
-                    if td.getText().strip() == "YES":
-                        availability_type = "Pick" if j % 2 else "Drop"
-                        for line in ssl_names[i].split('/'):
-                            data[line] = info_dict
-                        if container in info_dict:
-                            info_dict[container].append(availability_type)
-                        else:
-                            info_dict[container] = [availability_type]
-        return data
+    def get_tables(self, soup):
+        return [soup.find_all("table")[1]]
+    def get_rows(self, table):
+        return table.find_all("tr")[1:14]
+    def get_container_sizes(self, table):
+        self.container_sizes = [self.clean_text(td) for td in self.get_tds(table.tr)]
 
 class T30Parser(TerminalParser):
-    @staticmethod
-    def parse(soup):
+    def get_container_sizes(self, table):
+        return super().get_container_sizes(table)
+    def get_rows(self, table):
+        return super().get_rows(table)
+    def get_tables(self, soup):
+        return super().get_tables(soup)
+    def parse(self, soup):
         #TODO build this 
         return {}
 
 class T5Parser(TerminalParser):
-    @staticmethod
-    def parse(soup):
-        data = {}
-        tables = soup.find_all("table")
-        container_sizes = [td.getText().strip() for td in tables[1].tr.find_all("td")[1:]]
-        ssl_names = []
-        for x, table in enumerate(tables[1:]):
-            rows = table.find_all("tr")[1:]
-            for tr in rows:
-                line = tr.td.getText().strip()
-                if line not in ssl_names:
-                    ssl_names.append(line)
-            for i, tr in enumerate(rows):
-                info_dict = {}
-                for j, td in enumerate(tr.find_all("td")[1:]):
-                    container = container_sizes[j]
-                    line = ssl_names[i]
-                    if td.getText().strip() == "OPEN":
-                        availability_type = "Pick" if x else "Drop"
-                        if line not in data:
-                            data[line] = info_dict
-                        else:
-                            info_dict = data[line]
-                        if container in info_dict:
-                            info_dict[container].append(availability_type)
-                        else:
-                            info_dict[container] = [availability_type]
-        return data
+    def get_tables(self, soup):
+        return soup.find_all("table")[1:]
+    def get_rows(self, table):
+        return table.find_all("tr")[1:]
+    def get_container_sizes(self, table):
+        self.container_sizes = [self.clean_text(td) for td in self.get_tds(table.tr)]
 
 class WUTParser(TerminalParser):
-    @staticmethod
-    def parse(soup):
-        data = {}
-        table = soup.find_all("table")[0].tbody
-        rows = table.find_all("tr")[1:]
-        container_sizes = [td.getText().replace("’ ","").replace("Pick Up", "").replace("Drop", "").strip() for td in table.tr.find_all("td")[1:]]
-        ssl_names = [tr.td.getText().strip() for tr in rows]
-        for i, tr in enumerate(rows):
-            info_dict = {}
-            for j, td in enumerate(tr.find_all("td")[1:]):
-                containers = [container_sizes[j]]
-                if containers[0] in container_size_aliases:
-                    containers = container_size_aliases[containers[0]]
-                for container in containers:
-                    if td.getText().strip() == "YES":
-                        availability_type = "Pick" if j % 2 else "Drop"
-                        line = ssl_names[i]
-                        data[line] = info_dict
-                        if container in info_dict:
-                            info_dict[container].append(availability_type)
-                        else:
-                            info_dict[container] = [availability_type]
-        return data
+    def get_tables(self, soup):
+        return [soup.find_all("table")[0].tbody]
+    def get_rows(self, table):
+        return table.find_all("tr")[1:]
+    def get_container_sizes(self, table):
+        self.container_sizes = [self.clean_text(td) for td in self.get_tds(table.tr)]
 
 class HuskyParser(TerminalParser):
-    @staticmethod
-    def parse(soup):
-        data = {}
-        table = soup.find_all("table")[2]
-        rows = table.tbody.find_all("tr")
-        container_sizes = [th.getText().replace("' ","").replace("Drop","").replace("Pick","").strip() for th in table.thead.tr.find_all("th")[2:]]
-        ssl_names = [tr.find_all("td")[1].getText().strip() for tr in rows]
-        for i, tr in enumerate(rows):
-            info_dict = {}
-            for j, td in enumerate(tr.find_all("td")[2:]):
-                containers = [container_sizes[j]]
-                if containers[0] in container_size_aliases:
-                    containers = container_size_aliases[containers[0]]
-                for container in containers:
-                    if td.getText().strip() == "YES":
-                        availability_type = "Pick" if j % 2 else "Drop"
-                        line = ssl_names[i]
-                        data[line] = info_dict
-                        if container in info_dict:
-                            info_dict[container].append(availability_type)
-                        else:
-                            info_dict[container] = [availability_type]
-        return data
+    def get_tables(self, soup):
+        return [soup.find_all("table")[2]]
+    def get_rows(self, table):
+        return table.tbody.find_all("tr")
+    def get_tds(self, row):
+        return row.find_all("td")[2:]
+    def get_container_sizes(self, table):
+        self.container_sizes = [self.clean_text(td) for td in table.thead.tr.find_all("th")[2:]]
+    def get_ssl_names(self, rows):
+        for tr in rows:
+            line = self.clean_text(tr.find_all("td")[1])
+            if line not in self.ssl_names:
+                self.ssl_names.append(line)

@@ -1,4 +1,5 @@
 from flask_app import app
+import json
 from flask import render_template, jsonify, request, redirect, session
 from flask_app.utility.utils import write_to_worksheet
 from flask_app.models.user_model import User
@@ -36,8 +37,11 @@ def update_terminal():
 def fetch_new_data():
     if "user_id" not in session:
         return jsonify(status="error")
+
     for terminal in Terminal.retrieve_all():
         data = terminal.parse()
+        # json_data = json.dumps(data, indent=4)
+        # print(terminal.name, json_data)
         Availability.create(terminal, data)
     return jsonify(status="success")
 
