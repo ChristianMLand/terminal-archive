@@ -29,7 +29,7 @@ def update_terminal():
     logged_user = User.retrieve_one(id=session['user_id'])
     if logged_user.account_level < 2:
         return redirect("/")
-    Terminal.update(request.form)
+    Terminal.update(**request.form)
     return redirect('/settings')
 
 @app.get("/availabilites/fetch")

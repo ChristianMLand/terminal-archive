@@ -5,3 +5,5 @@ app = Flask(__name__)
 app.secret_key = "itsasecret"
 
 bcrypt = Bcrypt(app)
+
+DB = "terminal_archive"

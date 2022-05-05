@@ -32,7 +32,7 @@ def settings():#TODO update conditional rendering in template
 def login():
     if not User.validate(request.form):
         return redirect('/')
-    user = User.retrieve_by_email(email=request.form['email'])
+    user = User.retrieve_one(email=request.form['email'])
     session['user_id'] = user.id
     return redirect('/search')
 
@@ -48,7 +48,7 @@ def grant_access():
     logged_user = User.retrieve_one(id=session['user_id'])
     if logged_user.account_level < 2:
         return jsonify(status="error")
-    user_id, password = User.create(request.form)
+    user_id, password = User.create(**request.form)
     return jsonify(password=password, id=user_id, email=request.form['email'])
 
 @app.post('/change-password')
@@ -62,7 +62,7 @@ def update_access():
     logged_user = User.retrieve_one(id=session['user_id'])
     if logged_user.account_level <= int(request.json.get('account_level', '1')):
         return jsonify(status="error")
-    User.update(request.json)
+    User.update(**request.json)
     return jsonify(status="success")
 
 @app.post('/remove-access')
@@ -73,6 +73,6 @@ def delete_access():
     user_to_remove = User.retrieve_one(id=request.json.get('id'))
     if logged_user.account_level <= user_to_remove.account_level:
         return jsonify(status="error")
-    User.delete(request.json)
+    user_to_remove.delete()
     return jsonify(status="success")
 #--------------------------------------------------------------------------------#

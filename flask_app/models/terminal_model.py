@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
-from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app.models.parser_model import TerminalParser
+from flask_app.models.base_model import Model
 
-class Terminal:
+class Terminal(Model):
+    table="terminals"
+
     def __init__(self, data):
         self.id = data.get('id')
         self.name = data.get('name')
@@ -23,28 +25,6 @@ class Terminal:
         soup = BeautifulSoup(r.content, "html.parser")
         return TerminalParser.get_parser(self.name).parse(soup)
 
-    @classmethod
-    def retrieve_all(cls):
-        query = "SELECT * FROM terminals;"
-        results = connectToMySQL("terminal_archive").query_db(query)
-        return [cls(row) for row in results]
-
-    @classmethod
-    def retrieve_one(cls, **data):
-        query = "SELECT * FROM terminals WHERE id=%(id)s;"
-        results = connectToMySQL("terminal_archive").query_db(query, data)
-        if results:
-            return cls(results[0])
-
-    @staticmethod
-    def update(data):
-        query = '''
-                UPDATE terminals 
-                SET auth_email=%(auth_email)s, auth_password=%(auth_password)s
-                WHERE id=%(terminal_id)s;
-                '''
-        return connectToMySQL("terminal_archive").query_db(query, data)
-    
     @property
     def json(self):
         return {
