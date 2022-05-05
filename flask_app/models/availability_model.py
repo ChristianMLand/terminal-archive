@@ -1,5 +1,5 @@
 from flask_app.config.mysqlconnection import connectToMySQL
-from flask_app.models import container_model, ssl_model, terminal_model
+from flask_app.models import container_model, ssl_model 
 from datetime import datetime, date
 
 class Availability:

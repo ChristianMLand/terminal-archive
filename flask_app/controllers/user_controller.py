@@ -1,110 +1,80 @@
-import json
-from sqlite3 import connect
 from flask_app import app, bcrypt
 from flask import render_template, redirect, session, jsonify, request, flash
-from random import choice
+
 from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app.models.user_model import User
+from flask_app.models.terminal_model import Terminal
 
+#-----------------------------------Display Routes--------------------------#
 @app.get("/")
 def index():
     if 'user_id' in session:
         return redirect('/search')
     return render_template("index.html")
 
+@app.get("/settings")
+def settings():#TODO update conditional rendering in template
+    if "user_id" not in session:
+        return redirect("/")
+    logged_user = User.retrieve_one(id=session['user_id'])
+    terminals = None
+    users = None
+    if logged_user.account_level > 1:
+        terminals = Terminal.retrieve_all(auth_required = 1)
+        users = [user for user in User.retrieve_all() if user.account_level < logged_user.account_level]
+    context = {
+        "logged_user" : logged_user,
+        "terminals" : terminals,
+        "users" : users
+    }
+    return render_template("settings.html", **context)
+#---------------------------------------------------------------------------#
+#----------------------------Action Routes----------------------------------#
 @app.post('/login')
 def login():
-    form = {**request.form}
-    query = "SELECT * FROM users WHERE email = %(email)s;"
-    connection = connectToMySQL("terminal_archive")
-    user = connection.query_db(query, form)
-    connection.connection.close()
-    if user:
-        user = user[0]
-        if bcrypt.check_password_hash(user['password_hash'], form['password']):
-            session['user_id'] = user['id']
-        else:
-            flash("Invalid Password")
-    else:
-        flash("Invalid Email")
+    if not User.validate(request.form):
+        return redirect('/')
+    user = User.retrieve_by_email(email=request.form['email'])
+    session['user_id'] = user.id
     return redirect('/search')
 
-@app.post('/change-password')
-def change_password():
-    #TODO update password in db
+@app.get('/logout')
+def logout():
+    session.clear()
     return redirect('/')
 
 @app.post('/grant-access')
 def grant_access():
     if 'user_id' not in session:
         return jsonify(status="error")
-    logged_user = User.get_user_by_id(id=session['user_id'])
+    logged_user = User.retrieve_one(id=session['user_id'])
     if logged_user.account_level < 2:
         return jsonify(status="error")
-    password = generate_password()
-    data = {
-        "email" : request.form.get('email'),
-        "hash" :  bcrypt.generate_password_hash(password)
-    }
-    query = '''
-            INSERT INTO users
-            (email, password_hash)
-            VALUES
-            (%(email)s, %(hash)s);
-            '''
-    connection = connectToMySQL("terminal_archive")
-    user_id = connection.query_db(query, data)
-    connection.connection.close()
+    user_id, password = User.create(request.form)
+    return jsonify(password=password, id=user_id, email=request.form['email'])
 
-    print(password)
-
-    return jsonify(password=password, id=user_id, email=data['email'])
-
+@app.post('/change-password')
+def change_password():#TODO update password in db
+    return redirect('/')
 
 @app.post('/update-access')
 def update_access():
     if 'user_id' not in session:
         return jsonify(status="error")
-    logged_user = User.get_user_by_id(id=session['user_id'])
-    if logged_user.account_level <= int(request.json.get('account_level')):
+    logged_user = User.retrieve_one(id=session['user_id'])
+    if logged_user.account_level <= int(request.json.get('account_level', '1')):
         return jsonify(status="error")
-    query = '''
-            UPDATE users
-            SET account_level = %(account_level)s
-            WHERE users.id = %(id)s;
-            '''
-    connection = connectToMySQL("terminal_archive")
-    connection.query_db(query, request.json)
-    connection.connection.close()
-
+    User.update(request.json)
     return jsonify(status="success")
 
 @app.post('/remove-access')
 def delete_access():
     if 'user_id' not in session:
         return jsonify(status="error")
-    logged_user = User.get_user_by_id(id=session['user_id'])
-    user_to_remove = User.get_user_by_id(id=request.json.get('id'))
+    logged_user = User.retrieve_one(id=session['user_id'])
+    user_to_remove = User.retrieve_one(id=request.json.get('id'))
     if logged_user.account_level <= user_to_remove.account_level:
         return jsonify(status="error")
-    query = '''
-            DELETE FROM users
-            WHERE id = %(id)s;
-            '''
-    connection = connectToMySQL("terminal_archive")
-    connection.query_db(query, request.json)
-    connection.connection.close()
-
+    User.delete(request.json)
     return jsonify(status="success")
-
-def generate_password():
-    characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$-"
-    gen_pass = ""
-    while len(gen_pass) < 8:
-        gen_pass += choice(characters)
-    return gen_pass
-
-@app.get('/logout')
-def logout():
-    session.clear()
-    return redirect('/')
+#--------------------------------------------------------------------------------#
