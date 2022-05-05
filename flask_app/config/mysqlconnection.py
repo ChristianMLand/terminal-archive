@@ -15,7 +15,7 @@ class MySQLConnection:
         with self.connection.cursor() as cursor:
             try:
                 # Combines the data dictionary with the query string and formats it
-                query = cursor.mogrify(query.lower(), data).strip()
+                query = cursor.mogrify(query.lower(), data).replace("\\","").strip()
                 print("Running Query: ", query)
                 # Execute the query on our MySQL server
                 cursor.execute(query)

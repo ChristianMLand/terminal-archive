@@ -11,10 +11,11 @@ form.addEventListener('submit', e => {
         const results = result.data.data
         for (let row of results) {
             const tr = document.createElement("tr")
-            for (let key in row) {
+            const cells = [row.terminal, row.ssl, row.container, row.created_at, row.type]
+            for (let cell of cells) {
                 const td = document.createElement("td");
-                td.innerText = row[key];
-                tr.prepend(td);
+                td.innerText = cell;
+                tr.append(td);
             }
             tbody.append(tr);
         }

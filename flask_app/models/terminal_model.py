@@ -153,7 +153,6 @@ class Terminal:
         self.auth_required = data.get('auth_required')
         self.auth_url = data.get('auth_url')
         self.data_url = data.get('data_url')
-        self.parser = TerminalParser.get_parser(self.name)
 
     def parse(self):
         if self.auth_required:
@@ -163,30 +162,7 @@ class Terminal:
         else:
             r = requests.get(self.data_url)
         soup = BeautifulSoup(r.content, "html.parser")
-        return self.parser.parse(soup)
-
-    def update_db(self, data):
-        ssls = SSL.retrieve_all()
-        containers = Container.retrieve_all()
-
-        query = '''
-                INSERT INTO availabilities
-                (terminal_id, ssl_id, container_id, type)
-                VALUES
-                (%(terminal_id)s, %(ssl_id)s, %(container_id)s, %(types)s);
-                '''
-
-        for line in data:
-            availability = {"terminal_id" : self.id}
-            for ssl in ssls:
-                if line == ssl.name:
-                    availability['ssl_id'] = ssl.id
-            for cont in data[line]:
-                for container in containers:
-                    if cont in container.size:
-                        availability['container_id'] = container.id
-                        availability['types'] = ','.join(data[line][cont])
-                connectToMySQL("terminal_archive").query_db(query, availability)
+        return TerminalParser.get_parser(self.name).parse(soup)
 
     @classmethod
     def retrieve_all(cls):
@@ -197,6 +173,27 @@ class Terminal:
     @classmethod
     def retrieve_one(cls, **data):
         query = "SELECT * FROM terminals WHERE id=%(id)s;"
-        results = connectToMySQL("terminal_archive").query_db(query)
+        results = connectToMySQL("terminal_archive").query_db(query, data)
         if results:
             return cls(results[0])
+
+    @staticmethod
+    def update(data):
+        query = '''
+                UPDATE terminals 
+                SET auth_email=%(auth_email)s, auth_password=%(auth_password)s
+                WHERE id=%(terminal_id)s;
+                '''
+        return connectToMySQL("terminal_archive").query_db(query, data)
+    
+    @property
+    def json(self):
+        return {
+            "id" : self.id,
+            "name" : self.name,
+            "auth_email" : self.auth_email,
+            "auth_password" : self.auth_password,
+            "auth_required" : self.auth_required,
+            "auth_url" : self.auth_url,
+            "data_url" : self.data_url
+        }

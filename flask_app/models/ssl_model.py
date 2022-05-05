@@ -10,3 +10,17 @@ class SSL:
         query = "SELECT * FROM ssls;"
         results = connectToMySQL("terminal_archive").query_db(query)
         return [cls(row) for row in results]
+    
+    @classmethod
+    def retrieve_one(cls, **data):
+        query = "SELECT * FROM ssls WHERE id=%(id)s;"
+        results = connectToMySQL("terminal_archive").query_db(query, data)
+        if results:
+            return cls(results[0])
+    
+    @property
+    def json(self):
+        return {
+            "id" : self.id,
+            "name" : self.name
+        }
