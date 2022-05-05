@@ -1,6 +1,6 @@
 from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app import bcrypt
-from flask import session,flash
+from flask import flash
 from flask_app.utility.utils import generate_password
 
 class User:
