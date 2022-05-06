@@ -15,6 +15,8 @@ class User(Model):
 
     @classmethod
     def create(cls, **form_data):
+        if len(form_data.get("email","")) < 1:
+            return False
         password = generate_password()
         data = {
             "email" : form_data.get('email'),
@@ -27,12 +29,14 @@ class User(Model):
                 "password" : password,
                 "id" : user_id
             }
-        return user_id
+        return False
 
     @classmethod
     def update(cls, **form_data):
         logged_user = User.retrieve_one(id=session['user_id'])
         if form_data.get('new_password'):
+            if len(form_data['new_password']) < 8:
+                return False
             data = {"id" : logged_user.id}
             if bcrypt.check_password_hash(logged_user.password_hash, form_data.get('old_password')):
                 data['password_hash'] = bcrypt.generate_password_hash(form_data.get('new_password'))

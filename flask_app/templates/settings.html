@@ -5,83 +5,84 @@
 <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
 {% endblock %}
 {% block main %}
-    <main class="justify-content-between col-5 mx-auto">
-        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            {% if logged_user.account_level > 1 %}
-            <button class="nav-link active" id="nav-access-tab" data-bs-toggle="tab" data-bs-target="#nav-access" type="button" role="tab" aria-controls="nav-access" aria-selected="false">Manage Access</button>
-            <button class="nav-link" id="nav-terminal-tab" data-bs-toggle="tab" data-bs-target="#nav-terminal" type="button" role="tab" aria-controls="nav-terminal" aria-selected="true">Terminals</button>
-            {% endif %}
-            <button class="nav-link {{'active' if logged_user.account_level < 2}}" id="nav-password-tab" data-bs-toggle="tab" data-bs-target="#nav-password" type="button" role="tab" aria-controls="nav-password" aria-selected="false">Account</button>
+<main class="justify-content-between col-5 mx-auto">
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        {% if logged_user.account_level > 1 %}
+        <button class="nav-link active" id="nav-access-tab" data-bs-toggle="tab" data-bs-target="#nav-access" type="button" role="tab" aria-controls="nav-access" aria-selected="false">Manage Access</button>
+        <button class="nav-link" id="nav-terminal-tab" data-bs-toggle="tab" data-bs-target="#nav-terminal" type="button" role="tab" aria-controls="nav-terminal" aria-selected="true">Terminals</button>
+        {% endif %}
+        <button class="nav-link {{'active' if logged_user.account_level < 2}}" id="nav-password-tab" data-bs-toggle="tab" data-bs-target="#nav-password" type="button" role="tab" aria-controls="nav-password" aria-selected="false">Account</button>
+    </div>
+    <div class="tab-content p-4 border" id="v-pills-tabContent">
+        {% if logged_user.account_level > 1 %}
+        <div class="tab-pane fade show active" id="nav-access" role="tabpanel" aria-labelledby="nav-access-tab">
+            <form id="access-form" class="row align-items-center justify-content-between">
+                <div class="col col-10 mb-3">
+                    <label for="" class="form-label">Add User Access</label>
+                    <div class="input-group mb-3">
+                        <input type="text" name="email" class="form-control" placeholder="Email" aria-label="Recipient's email"
+                            aria-describedby="basic-addon2">
+                        <span class="input-group-text" id="basic-addon2">@odysseylogistics.com</span>
+                    </div>
+                </div>
+                <div class="col col-2">
+                    <button class="btn btn-outline-success">Add</button>
+                </div>
+            </form>
+            <p>Users with access</p>
+            <ul id="user-list" class="list-group">
+                {% set levels = ["Basic", "Admin"] %}
+                {% for user in users %}
+                <li class="list-group-item d-flex gap-4 align-items-center">
+                    <span class="me-auto w-25">{{user.email}}</span>
+                    <select onchange="updateAccess(this)" data-user-id="{{user.id}}" name="account_level" class="w-25 form-select">
+                        {% for i in range(logged_user.account_level - 1) %}
+                        <option value="{{i + 1}}" {{"selected" if user.account_level == i + 1}}>{{levels[i]}}</option>
+                        {% endfor %}
+                    </select>
+                    <button onclick="removeAccess(this)" data-user-id="{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</button>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        <div class="tab-content p-4 border" id="v-pills-tabContent">
-            {% if logged_user.account_level > 1 %}
-            <div class="tab-pane fade show active" id="nav-access" role="tabpanel" aria-labelledby="nav-access-tab">
-                <form id="access-form" class="row align-items-center justify-content-between">
-                    <div class="col col-10 mb-3">
-                        <label for="" class="form-label">Add User Access</label>
-                        <div class="input-group mb-3">
-                            <input type="text" name="email" class="form-control" placeholder="Email" aria-label="Recipient's email"
-                                aria-describedby="basic-addon2">
-                            <span class="input-group-text" id="basic-addon2">@odysseylogistics.com</span>
-                        </div>
-                    </div>
-                    <div class="col col-2">
-                        <button class="btn btn-outline-success">Add</button>
-                    </div>
-                </form>
-                <p>Users with access</p>
-                <ul id="user-list" class="list-group">
-                    {% set levels = ["Basic", "Admin"] %}
-                    {% for user in users %}
-                    <li class="list-group-item d-flex gap-4 align-items-center">
-                        <span class="me-auto w-25">{{user.email}}</span>
-                        <select onchange="updateAccess(this)" data-user-id="{{user.id}}" name="account_level" class="w-25 form-select">
-                            {% for i in range(logged_user.account_level - 1) %}
-                            <option value="{{i + 1}}" {{"selected" if user.account_level == i + 1}}>{{levels[i]}}</option>
-                            {% endfor %}
-                        </select>
-                        <button onclick="removeAccess(this)" data-user-id="{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</button>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="tab-pane fade" id="nav-terminal" role="tabpanel" aria-labelledby="nav-terminal-tab">
-                <form id="terminal-form">
-                    <div class="mb-3">
-                        <label class="form-label">Terminal</label>
-                        <select name="id" class="form-select">
-                            {% for terminal in terminals %}
-                            <option value="{{terminal.id}}">{{terminal.name}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleInputEmail1" class="form-label">Email address</label>
-                        <input type="email" value="{{terminals[0].auth_email}}" name="auth_email" class="form-control" id="exampleInputEmail1">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleInputPassword1" class="form-label">Password</label>
-                        <input type="text" value="{{terminals[0].auth_password}}" name="auth_password" class="form-control" id="exampleInputPassword1">
-                    </div>
-                    <button type="submit" class="btn btn-outline-primary">Submit</button>
-                </form>
-            </div>
-            {% endif %}
-            <div class="tab-pane fade {{'show active' if logged_user.account_level < 2}}" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
-                <form id="password-form">
-                    <div class="mb-3">
-                        <label class="form-label">Current Password</label>
-                        <input type="text" name="old_password" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleInputPassword1" class="form-label">New Password</label>
-                        <input type="text" name="new_password" class="form-control">
-                    </div>
-                    <button type="submit" class="btn btn-outline-primary">Submit</button>
-                </form>
-            </div>
+        <div class="tab-pane fade" id="nav-terminal" role="tabpanel" aria-labelledby="nav-terminal-tab">
+            <form id="terminal-form">
+                <div class="mb-3">
+                    <label class="form-label">Terminal</label>
+                    <select name="id" class="form-select">
+                        {% for terminal in terminals %}
+                        <option value="{{terminal.id}}">{{terminal.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="exampleInputEmail1" class="form-label">Email address</label>
+                    <input type="email" value="{{terminals[0].auth_email}}" name="auth_email" class="form-control" id="exampleInputEmail1">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleInputPassword1" class="form-label">Password</label>
+                    <input type="text" value="{{terminals[0].auth_password}}" name="auth_password" class="form-control" id="exampleInputPassword1">
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Submit</button>
+            </form>
         </div>
-    </main>
+        {% endif %}
+        <div class="tab-pane fade {{'show active' if logged_user.account_level < 2}}" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
+            <form id="password-form">
+                <div class="mb-3">
+                    <label class="form-label">Current Password</label>
+                    <input type="text" name="old_password" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleInputPassword1" class="form-label">New Password</label>
+                    <input type="text" name="new_password" class="form-control">
+                    <span class="form-text">Password must be at least 8 characters</span>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</main>
 {% endblock %}
 {% block script %}
 <script src="{{url_for('static', filename='js/settings.js')}}"></script>

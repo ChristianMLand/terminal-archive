@@ -35,8 +35,9 @@ accessForm && accessForm.addEventListener('submit', e => {
     axios.post('/api/users/create', new FormData(accessForm))
     .then(data => {
         const user = data.data;
+        console.log(user)
         createMessage(accessForm, user)
-        if (user.status == "success") {
+        if (user.status != "error") {
             const userLi = document.createElement("li");
             userLi.classList.add('list-group-item', 'd-flex', 'gap-4', 'justify-content-between', 'align-items-center');
             userLi.innerHTML = `
@@ -64,15 +65,25 @@ passwordForm && passwordForm.addEventListener("submit", e => {
 
 function createMessage(form, data) {
     clearMessages();
-    const message = document.createElement("p");
-    message.classList.add("alert","mt-4", "msg")
+    const message = document.createElement("div");
+    message.classList.add("alert","mt-2", "msg", "text-center", "alert-dismissable", "fade", "show", "align-items-center", "d-flex", "justify-content-between", "gap-5")
+    const span = document.createElement("span")
+    const btn = document.createElement("button")
+    btn.type = "button"
+    btn.classList.add("btn-close")
+    btn.setAttribute("data-bs-dismiss","alert")
+    btn.setAttribute("aria-label","Close")
     if (data.status == "error") {
         message.classList.add("alert-danger");
-        message.innerText = "Error: Something went wrong"
+        span.innerText = "Error: Something went wrong"
     } else if (data.status == "success") {
         message.classList.add("alert-success")
-        message.innerText = "Successfully updated"
+        span.innerText = "Successfully updated"
+    } else {
+        message.classList.add("alert-success")
+        span.innerText = `User ${data.email} added with password: ${data.password}`
     }
+    message.append(span,btn)
     form.append(message)
 }
 
