@@ -37,7 +37,7 @@ class Availability:
             if key in ['type','terminal_id','ssl_id','container_id']:
                 data[key] = "','".join(data[key])
         print(data.get('type'))
-        if data.get('type') and data['type'] in 'pick,drop':
+        if data.get('type','None') in 'pick,drop':
             data['type'] = f"%{data['type']}%"
             query += 'AND TYPE LIKE %(type)s '
         wheres = ""
@@ -48,7 +48,9 @@ class Availability:
         query += "ORDER BY created_at DESC;"
         print(query,data)
         results = connectToMySQL("terminal_archive").query_db(query, data)
-        return [cls(row) for row in results]
+        if results:
+            return [cls(row) for row in results]
+        return results
 
     @staticmethod
     def create(terminal, data):
@@ -67,7 +69,7 @@ class Availability:
                         availability['types'] = ','.join(data[line][cont])
                 query += f" ({availability['terminal_id']}, {availability['ssl_id']}, {availability['container_id']}, '{availability['types']}'),"
         query = query[:-1] + ";"
-        connectToMySQL("terminal_archive").query_db(query)
+        return connectToMySQL("terminal_archive").query_db(query)
     
     @property
     def json(self):

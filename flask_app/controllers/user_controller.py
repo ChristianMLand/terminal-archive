@@ -5,28 +5,22 @@ from flask_app.models.terminal_model import Terminal
 
 #-----------------------------------Display Routes--------------------------#
 @app.get("/")
-def index():#TODO improve display of error messages in template
+def index():
     if 'user_id' in session:
         return redirect('/search')
     return render_template("index.html")
 
 @app.get("/settings")
-def settings():#TODO update conditional rendering in template
+def settings():
     if "user_id" not in session:
         return redirect("/")
     logged_user = User.retrieve_one(id=session['user_id'])
-    terminals = None
-    users = None
-    if logged_user.account_level > 1:
-        terminals = Terminal.retrieve_all(auth_required = 1)
-        users = [user for user in User.retrieve_all() if user.account_level < logged_user.account_level]
     context = {
         "logged_user" : logged_user,
-        "terminals" : terminals,
-        "users" : users
+        "terminals" : Terminal.retrieve_all(auth_required = 1),
+        "users" : [user for user in User.retrieve_all() if user.account_level < logged_user.account_level]
     }
     return render_template("settings.html", **context)
-#---------------------------------------------------------------------------#
 #----------------------------Action Routes----------------------------------#
 @app.post('/login')
 def login():

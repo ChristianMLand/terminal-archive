@@ -21,12 +21,14 @@ class User(Model):
             "password_hash" :  bcrypt.generate_password_hash(password)
         }
         user_id = super().create(**data)
-        return {
-            "email" : data['email'],
-            "password" : password,
-            "id" : user_id
-        }
-    
+        if user_id:
+            return {
+                "email" : data['email'],
+                "password" : password,
+                "id" : user_id
+            }
+        return user_id
+
     @classmethod
     def update(cls, **form_data):#TODO refactor validations into their own methods
         logged_user = User.retrieve_one(id=session['user_id'])
@@ -34,9 +36,10 @@ class User(Model):
             data = {"id" : logged_user.id}
             if bcrypt.check_password_hash(logged_user.password_hash, form_data.get('old_password')):
                 data['password_hash'] = bcrypt.generate_password_hash(form_data.get('new_password'))
-                super().update(**data)
+                return super().update(**data)
         if form_data.get('account_level',3) < logged_user.account_level:
-            super().update(**form_data)
+            return super().update(**form_data)
+        return False
 
     @staticmethod
     def validate(data):

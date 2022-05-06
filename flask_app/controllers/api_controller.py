@@ -21,7 +21,10 @@ def get_item(type,id):
         return jsonify(status="error")
     if type not in api_types:
         return jsonify(status="error")
-    return jsonify(api_types[type].retrieve_one(id=id).json)
+    results = api_types[type].retrieve_one(id=id).json
+    if results == False:
+        return jsonify(status="error")
+    return jsonify(results)
 
 @app.get('/api/<type>')
 def get_all_items(type):
@@ -29,7 +32,10 @@ def get_all_items(type):
         return jsonify(status="error")
     if type not in api_types:
         return jsonify(status="error")
-    return jsonify([item.json for item in api_types[type].retrieve_all()])
+    results = api_types[type].retrieve_all()
+    if results == False:
+        return jsonify(status="error")
+    return jsonify([item.json for item in results])
 
 @app.post('/api/<type>/update')
 def update_item(type):
@@ -38,7 +44,9 @@ def update_item(type):
     if type not in api_types:
         return jsonify(status="error")
     form = request.form or request.json
-    api_types[type].update(**form)
+    result = api_types[type].update(**form)
+    if result == False:
+        return jsonify(status="error")
     return jsonify(status="success")
 
 @app.post('/api/<type>/create')
@@ -51,8 +59,10 @@ def create_item(type):
     if logged_user.account_level < 2:
         return jsonify(status="error")
     form = request.form or request.json
-    data = api_types[type].create(**form)
-    return jsonify(**data)
+    result = api_types[type].create(**form)
+    if result == False:
+        return jsonify(status="error")
+    return jsonify(**result)
 
 @app.post('/api/<type>/delete')
 def delete_item(type):
@@ -64,6 +74,8 @@ def delete_item(type):
     if logged_user.account_level < 2:
         return jsonify(status="error")
     form = request.form or request.json
-    api_types[type].delete(**form)
+    result = api_types[type].delete(**form)
+    if result == False:
+        return jsonify(status="error")
     return jsonify(status="success")
 #------------------------------------------------------------------------------#

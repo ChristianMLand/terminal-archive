@@ -21,7 +21,6 @@ def search():
         "logged_user" : User.retrieve_one(id=session['user_id'])
     }
     return render_template("search.html", **context)
-#--------------------------------------------------------------------------#
 #-------------------------Action Routes------------------------------------#
 @app.get("/availabilites/fetch")
 def fetch_new_data():

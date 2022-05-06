@@ -18,7 +18,10 @@ class Terminal(Model):
     def parse(self):
         if self.auth_required:
             with requests.session() as s:
-                s.post(self.auth_url, data={"j_username" : self.auth_email, "j_password" : self.auth_password})
+                s.post(self.auth_url, data={
+                    "j_username" : self.auth_email, 
+                    "j_password" : self.auth_password
+                })
                 r = s.get(self.data_url)
         else:
             r = requests.get(self.data_url)

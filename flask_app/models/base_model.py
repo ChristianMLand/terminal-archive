@@ -25,6 +25,7 @@ class Model:
         results = connectToMySQL(DB).query_db(query,data)
         if results:
             return cls(results[0])
+        return results
 
     @classmethod
     def retrieve_all(cls,**data:dict):
@@ -34,6 +35,7 @@ class Model:
         results = connectToMySQL(DB).query_db(query,data)
         if results:
             return [cls(row) for row in results]
+        return results
 
     @classmethod
     def update(cls,id:int,**data:dict):
@@ -49,4 +51,4 @@ class Model:
         query = f'DELETE FROM `{cls.table}`'
         if data:
             query += f'WHERE {" AND ".join(f"`{col}`=%({col})s" for col in data)};'
-        connectToMySQL(DB).query_db(query,data)
+        return connectToMySQL(DB).query_db(query,data)

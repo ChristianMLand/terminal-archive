@@ -24,7 +24,7 @@
             <input type="password" name="password" class="form-control" placeholder="password" id="exampleInputPassword1">
             <button type="submit" class="btn btn-outline-success mt-3 mx-auto d-block">Login</button>
             {% for msg in get_flashed_messages() %}
-            <p>{{msg}}</p>
+            <p class="alert alert-danger my-2 text-center">{{msg}}</p>
             {% endfor %}
         </form>
     </main>

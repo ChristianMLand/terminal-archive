@@ -30,8 +30,17 @@ terminalForm && terminalForm.addEventListener('submit', e => {
     e.preventDefault();
     axios.post('/api/terminals/update', new FormData(terminalForm))
     .then(data => {
-        //TODO handle if status == "error" and show alert message
-        console.log(data.data);
+        clearMessages();
+        const message = document.createElement("p");
+        message.classList.add("alert","mt-4", "msg")
+        if (data.data.status == "error") {
+            message.classList.add("alert-danger");
+            message.innerText = "Error: Something went wrong"
+        } else if (data.data.status == "success") {
+            message.classList.add("alert-success")
+            message.innerText = "Successfully updated"
+        }
+        terminalForm.append(message)
     })
     .catch(console.error)
 });
@@ -40,23 +49,30 @@ accessForm && accessForm.addEventListener('submit', e => {
     e.preventDefault();
     axios.post('/api/users/create', new FormData(accessForm))
     .then(data => {
-        //TODO handle if status == "error"
         //TODO refactor alert creation into seperate method
+        clearMessages();
         const user = data.data;
-        accessGrantedAlert.classList.add('d-flex', 'alert', 'alert-success');
-        accessGrantedAlert.innerText = `Granted user access with password: ${user.password}`;
-
-        const userLi = document.createElement("li");
-        userLi.classList.add('list-group-item', 'd-flex', 'gap-4', 'justify-content-between', 'align-items-center');
-        userLi.innerHTML = `
-            <span class="me-auto w-25">${user.email}</span>
-            <select onchange="updateAccess(this)" data-user-id="${user.id}" name="account_level" class="w-25 form-select">
-                <option value="1" selected>Basic</option>
-                <option value="2">Admin</option>
-            </select>
-            <button onclick="removeAccess(this)" data-user-id="${user.id}" class="btn btn-sm btn-outline-danger">Remove</button>
-            `
-        userList.append(userLi);
+        const message = document.createElement("p")
+        message.classList.add("alert", "text-center", "msg")
+        if (user.status == "error") {
+            message.classList.add("alert-danger")
+            message.innerText = "Error: Something went wrong"
+        } else {
+            message.classList.add('alert-success');
+            message.innerText = `Granted user access with password: ${user.password}`;
+            const userLi = document.createElement("li");
+            userLi.classList.add('list-group-item', 'd-flex', 'gap-4', 'justify-content-between', 'align-items-center');
+            userLi.innerHTML = `
+                <span class="me-auto w-25">${user.email}</span>
+                <select onchange="updateAccess(this)" data-user-id="${user.id}" name="account_level" class="w-25 form-select">
+                    <option value="1" selected>Basic</option>
+                    <option value="2">Admin</option>
+                </select>
+                <button onclick="removeAccess(this)" data-user-id="${user.id}" class="btn btn-sm btn-outline-danger">Remove</button>
+                `
+            userList.append(userLi);
+        }
+        accessForm.append(message)
     })
     .catch(console.error)
 });
@@ -65,12 +81,26 @@ passwordForm && passwordForm.addEventListener("submit", e => {
     e.preventDefault();
     axios.post("/api/users/update", new FormData(passwordForm))
     .then(data => {
-        console.log(data.data);
-        //TODO alert that confirms it was updated successfully
-        //TODO handle status == "error" and create error alert
+        clearMessages()
+        const message = document.createElement("p")
+        message.classList.add("alert", "text-center", "msg", "mt-4")
+        if (data.data.status == "error") {
+            message.classList.add("alert-danger")
+            message.innerText = "Error: Something went Wrong"
+        } else if (data.data.status == "success") {
+            message.classList.add("alert-success")
+            message.innerText = "Successfully updated"
+        }
+        passwordForm.append(message)
     })
     .catch(console.error)
 })
+
+function clearMessages() {
+    for (const msg of document.querySelectorAll(".msg")) {
+        msg.remove()
+    }
+}
 
 function updateAccess(elem) {
     axios.post('/api/users/update', {
