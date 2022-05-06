@@ -25,9 +25,9 @@ form.addEventListener('submit', e => {
 })
 
 function fetchCurrentData() {
-    //TODO popup to confirm they want to fetch
-    //TODO handle status="error" and display error alert
-    axios.get('/availabilites/fetch')
-    .then(console.log)
-    .catch(console.error);
+    if (confirm("Fetch current data from the terminal websites?")) {
+        axios.get('/availabilites/fetch')
+        .then(console.log)
+        .catch(console.error);
+    }
 }

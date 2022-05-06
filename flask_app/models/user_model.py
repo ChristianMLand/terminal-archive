@@ -30,7 +30,7 @@ class User(Model):
         return user_id
 
     @classmethod
-    def update(cls, **form_data):#TODO refactor validations into their own methods
+    def update(cls, **form_data):
         logged_user = User.retrieve_one(id=session['user_id'])
         if form_data.get('new_password'):
             data = {"id" : logged_user.id}

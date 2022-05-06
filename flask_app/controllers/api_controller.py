@@ -1,5 +1,5 @@
 import json
-from flask import jsonify, session, request
+from flask import jsonify, render_template, session, request
 from flask_app import app
 from flask_app.models.terminal_model import Terminal
 from flask_app.models.ssl_model import SSL
@@ -79,3 +79,6 @@ def delete_item(type):
         return jsonify(status="error")
     return jsonify(status="success")
 #------------------------------------------------------------------------------#
+@app.get("/<catch>")
+def catch_all(catch):
+    return render_template("404.html")

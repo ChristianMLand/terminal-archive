@@ -9,12 +9,9 @@ const userList = document.querySelector("#user-list")
 
 const passwordForm = document.querySelector("#password-form")
 
-//TODO make function for generating and displaying alert messages
-
 terminalSelect && terminalSelect.addEventListener('change', e => {
     axios.get(`/api/terminals/${e.target.value}`)
     .then(data => {
-        //TODO handle if status == "error" and show alert messge
         const terminal = data.data.terminal;
         terminalEmail.value = terminal.auth_email
         terminalPassword.value = terminal.auth_password
@@ -23,24 +20,12 @@ terminalSelect && terminalSelect.addEventListener('change', e => {
     .catch(console.error)
     console.log(terminalEmail)
 });
-
+//TODO attempt to make a request to the auth_url with new credentials (with axios)
 terminalForm && terminalForm.addEventListener('submit', e => {
-    //TODO attempt to make a request to the auth_url with new credentials (with axios)
-    //TODO show validation alert on page if request fails and do not update in DB
     e.preventDefault();
     axios.post('/api/terminals/update', new FormData(terminalForm))
     .then(data => {
-        clearMessages();
-        const message = document.createElement("p");
-        message.classList.add("alert","mt-4", "msg")
-        if (data.data.status == "error") {
-            message.classList.add("alert-danger");
-            message.innerText = "Error: Something went wrong"
-        } else if (data.data.status == "success") {
-            message.classList.add("alert-success")
-            message.innerText = "Successfully updated"
-        }
-        terminalForm.append(message)
+        createMessage(terminalForm, data.data)
     })
     .catch(console.error)
 });
@@ -49,17 +34,9 @@ accessForm && accessForm.addEventListener('submit', e => {
     e.preventDefault();
     axios.post('/api/users/create', new FormData(accessForm))
     .then(data => {
-        //TODO refactor alert creation into seperate method
-        clearMessages();
         const user = data.data;
-        const message = document.createElement("p")
-        message.classList.add("alert", "text-center", "msg")
-        if (user.status == "error") {
-            message.classList.add("alert-danger")
-            message.innerText = "Error: Something went wrong"
-        } else {
-            message.classList.add('alert-success');
-            message.innerText = `Granted user access with password: ${user.password}`;
+        createMessage(accessForm, user)
+        if (user.status == "success") {
             const userLi = document.createElement("li");
             userLi.classList.add('list-group-item', 'd-flex', 'gap-4', 'justify-content-between', 'align-items-center');
             userLi.innerHTML = `
@@ -72,7 +49,6 @@ accessForm && accessForm.addEventListener('submit', e => {
                 `
             userList.append(userLi);
         }
-        accessForm.append(message)
     })
     .catch(console.error)
 });
@@ -81,20 +57,24 @@ passwordForm && passwordForm.addEventListener("submit", e => {
     e.preventDefault();
     axios.post("/api/users/update", new FormData(passwordForm))
     .then(data => {
-        clearMessages()
-        const message = document.createElement("p")
-        message.classList.add("alert", "text-center", "msg", "mt-4")
-        if (data.data.status == "error") {
-            message.classList.add("alert-danger")
-            message.innerText = "Error: Something went Wrong"
-        } else if (data.data.status == "success") {
-            message.classList.add("alert-success")
-            message.innerText = "Successfully updated"
-        }
-        passwordForm.append(message)
+        createMessage(passwordForm, data.data)
     })
     .catch(console.error)
 })
+
+function createMessage(form, data) {
+    clearMessages();
+    const message = document.createElement("p");
+    message.classList.add("alert","mt-4", "msg")
+    if (data.status == "error") {
+        message.classList.add("alert-danger");
+        message.innerText = "Error: Something went wrong"
+    } else if (data.status == "success") {
+        message.classList.add("alert-success")
+        message.innerText = "Successfully updated"
+    }
+    form.append(message)
+}
 
 function clearMessages() {
     for (const msg of document.querySelectorAll(".msg")) {
@@ -120,7 +100,6 @@ function removeAccess(elem) {
         if (data.status == "success") {
             elem.parentNode.remove();
         }
-        console.log(data);
     })
     .catch(console.error)
 }
