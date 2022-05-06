@@ -1,6 +1,6 @@
 from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app import bcrypt, DB
-from flask import flash
+from flask import flash, session
 from flask_app.utility.utils import generate_password
 from flask_app.models.base_model import Model
 
@@ -13,21 +13,30 @@ class User(Model):
         self.password_hash = data.get('password_hash')
         self.account_level = data.get('account_level')
 
-    @staticmethod
-    def create(form_data):
+    @classmethod
+    def create(cls, **form_data):
         password = generate_password()
         data = {
             "email" : form_data.get('email'),
-            "hash" :  bcrypt.generate_password_hash(password)
+            "password_hash" :  bcrypt.generate_password_hash(password)
         }
-        query = '''
-                INSERT INTO users
-                (email, password_hash)
-                VALUES
-                (%(email)s, %(hash)s);
-                '''
-        user_id = connectToMySQL(DB).query_db(query, data)
-        return user_id, password
+        user_id = super().create(**data)
+        return {
+            "email" : data['email'],
+            "password" : password,
+            "id" : user_id
+        }
+    
+    @classmethod
+    def update(cls, **form_data):#TODO refactor validations into their own methods
+        logged_user = User.retrieve_one(id=session['user_id'])
+        if form_data.get('new_password'):
+            data = {"id" : logged_user.id}
+            if bcrypt.check_password_hash(logged_user.password_hash, form_data.get('old_password')):
+                data['password_hash'] = bcrypt.generate_password_hash(form_data.get('new_password'))
+                super().update(**data)
+        if form_data.get('account_level',3) < logged_user.account_level:
+            super().update(**form_data)
 
     @staticmethod
     def validate(data):

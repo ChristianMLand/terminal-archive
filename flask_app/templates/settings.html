@@ -27,22 +27,25 @@
     <main class="d-flex justify-content-between col-6 mx-auto">
         <div class="d-flex align-items-start">
             <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                {% if logged_user.account_level > 1 %}
                 <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill"
                     data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home"
                     aria-selected="true">Terminal Settings</button>
                 <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill"
                     data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile"
                     aria-selected="false">Manage User Access</button>
-                <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill"
+                {% endif %}
+                <button class="nav-link {{'active' if logged_user.account_level < 2}}" id="v-pills-settings-tab" data-bs-toggle="pill"
                     data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
                     aria-selected="false">Account Settings</button>
             </div>
             <div class="tab-content" id="v-pills-tabContent">
+                {% if logged_user.account_level > 1 %}
                 <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
-                    <form id="terminal-form" method="post" action="/terminals/update">
+                    <form id="terminal-form">
                         <div class="mb-3">
                             <label class="form-label">Terminal</label>
-                            <select name="terminal_id" class="form-select">
+                            <select name="id" class="form-select">
                                 {% for terminal in terminals %}
                                 <option value="{{terminal.id}}">{{terminal.name}}</option>
                                 {% endfor %}
@@ -90,9 +93,18 @@
                         {% endfor %}
                     </ul>
                 </div>
-                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
-                    <form action="">
-                        TODO add change password field
+                {% endif %}
+                <div class="tab-pane fade {{'show active' if logged_user.account_level < 2}}" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
+                    <form id="password-form">
+                        <div class="mb-3">
+                            <label class="form-label">Current Password</label>
+                            <input type="text" name="old_password" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">New Password</label>
+                            <input type="text" name="new_password" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary">Submit</button>
                     </form>
                 </div>
             </div>

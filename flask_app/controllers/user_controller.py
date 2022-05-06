@@ -40,39 +40,4 @@ def login():
 def logout():
     session.clear()
     return redirect('/')
-
-@app.post('/grant-access')
-def grant_access():
-    if 'user_id' not in session:
-        return jsonify(status="error")
-    logged_user = User.retrieve_one(id=session['user_id'])
-    if logged_user.account_level < 2:
-        return jsonify(status="error")
-    user_id, password = User.create(**request.form)
-    return jsonify(password=password, id=user_id, email=request.form['email'])
-
-@app.post('/change-password')
-def change_password():#TODO update password in db
-    return redirect('/')
-
-@app.post('/update-access')
-def update_access():
-    if 'user_id' not in session:
-        return jsonify(status="error")
-    logged_user = User.retrieve_one(id=session['user_id'])
-    if logged_user.account_level <= int(request.json.get('account_level', '1')):
-        return jsonify(status="error")
-    User.update(**request.json)
-    return jsonify(status="success")
-
-@app.post('/remove-access')
-def delete_access():
-    if 'user_id' not in session:
-        return jsonify(status="error")
-    logged_user = User.retrieve_one(id=session['user_id'])
-    user_to_remove = User.retrieve_one(id=request.json.get('id'))
-    if logged_user.account_level <= user_to_remove.account_level:
-        return jsonify(status="error")
-    user_to_remove.delete()
-    return jsonify(status="success")
 #--------------------------------------------------------------------------------#

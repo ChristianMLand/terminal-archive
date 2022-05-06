@@ -23,16 +23,6 @@ def search():
     return render_template("search.html", **context)
 #--------------------------------------------------------------------------#
 #-------------------------Action Routes------------------------------------#
-@app.post("/terminals/update")#TODO update terminals/update to use ajax w jsonify
-def update_terminal():
-    if 'user_id' not in session:
-        return redirect("/")
-    logged_user = User.retrieve_one(id=session['user_id'])
-    if logged_user.account_level < 2:
-        return redirect("/")
-    Terminal.update(**request.form)
-    return redirect('/settings')
-
 @app.get("/availabilites/fetch")
 def fetch_new_data():
     if "user_id" not in session:

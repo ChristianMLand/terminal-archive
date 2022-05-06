@@ -128,7 +128,6 @@ class T30Parser(TerminalParser):
                 info_dict[cont] = [availability_type]
         return {k:v for k,v in self.data.items() if v}
 
-
 class T5Parser(TerminalParser):
     def get_tables(self, soup):
         return soup.find_all("table")[1:]
