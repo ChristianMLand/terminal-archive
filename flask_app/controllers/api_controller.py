@@ -81,4 +81,5 @@ def delete_item(type):
 #------------------------------------------------------------------------------#
 @app.get("/<catch>")
 def catch_all(catch):
+    print(f"User id={session.get('user_id')} attempted connection to {catch}")
     return render_template("404.html")

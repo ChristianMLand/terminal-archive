@@ -4,7 +4,6 @@ const tbody = document.querySelector("tbody")
 $('.selectpicker').selectpicker();
 
 form.addEventListener('submit', e => {
-    //TODO handle status="error" and display error alert
     e.preventDefault();
     axios.post('/availabilities/filter', new FormData(form))
     .then(result => {

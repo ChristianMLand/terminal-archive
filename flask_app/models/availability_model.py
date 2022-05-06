@@ -36,7 +36,6 @@ class Availability:
         for key in data:
             if key in ['type','terminal_id','ssl_id','container_id']:
                 data[key] = "','".join(data[key])
-        print(data.get('type'))
         if data.get('type','None') in 'pick,drop':
             data['type'] = f"%{data['type']}%"
             query += 'AND TYPE LIKE %(type)s '
@@ -46,7 +45,6 @@ class Availability:
                 wheres += f"AND {key} in (%({key})s) "
         query += wheres
         query += "ORDER BY created_at DESC;"
-        print(query,data)
         results = connectToMySQL("terminal_archive").query_db(query, data)
         if results:
             return [cls(row) for row in results]

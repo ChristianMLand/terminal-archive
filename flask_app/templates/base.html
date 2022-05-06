@@ -18,11 +18,9 @@
 
 <body>
     <nav class="p-4 navbar navbar-light bg-light border mb-5">
+    {% block nav %}
         <a href="/" class="navbar-brand h1 mx-5">Terminal Archive</a>
-        {% if "user_id" in session %}
-        <a href="/settings" class="navbar-text">Welcome, {{logged_user.email}}</a>
-        <a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
-        {% endif %}
+    {% endblock %}
     </nav>
     {% block main %}
     {% endblock %}

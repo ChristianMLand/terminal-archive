@@ -8,7 +8,6 @@ from flask_app.models.ssl_model import SSL
 from flask_app.models.container_model import Container
 from flask_app.models.availability_model import Availability
 
-#TODO use template inheritance to avoid duplicate html
 #-------------------------Display Routes---------------------------------#
 @app.get("/search")
 def search():

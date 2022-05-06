@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% block nav %}
+<a href="/" class="navbar-brand h1 mx-5">Terminal Archive</a>
+<a href="/settings" class="navbar-text">Welcome, {{logged_user.email}}</a>
+<a href="/logout" class="btn btn-outline-danger mx-5">Logout</a>
+{% endblock %}
 {% block main %}
-<main class="d-flex h-75 w-75 mx-auto flex-column align-items-center justify-content-center">
+<main class="d-flex col-10 mx-auto flex-column align-items-center justify-content-center">
     <div id="actions" class="mb-3 d-flex gap-4">
         <button onclick="fetchCurrentData()" class="btn btn-outline-danger">Fetch Current Data</button>
         <a href="{{url_for('static', filename='output.xlsx')}}" target="_blank" class="btn btn-outline-info">Download as Excel</a>
