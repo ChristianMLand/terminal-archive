@@ -20,15 +20,6 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v1
         with:
-          db_name: ${{ secrets.DB_NAME }}
-          host: ${{ secrets.HOST }}
-          j_password: ${{ secrets.J_PASSWORD }}
-          j_username: ${{ secrets.J_USERNAME }}
-          owner_email: ${{ secrets.OWNER_EMAIL }}
-          owner_pw_hash: ${{ secrets.OWNER_PW_HASH }}
-          password: ${{ secrets.PASSWORD }}
-          secret_key: ${{ secrets.SECRET_KEY }}
-          user: ${{ secrets.USER }}
           python-version: '3.9'
 
       - name: Create and start virtual environment
@@ -45,15 +36,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: python-app
-          db_name: ${{ secrets.DB_NAME }}
-          host: ${{ secrets.HOST }}
-          j_password: ${{ secrets.J_PASSWORD }}
-          j_username: ${{ secrets.J_USERNAME }}
-          owner_email: ${{ secrets.OWNER_EMAIL }}
-          owner_pw_hash: ${{ secrets.OWNER_PW_HASH }}
-          password: ${{ secrets.PASSWORD }}
-          secret_key: ${{ secrets.SECRET_KEY }}
-          user: ${{ secrets.USER }}
           path: |
             . 
             !venv/
