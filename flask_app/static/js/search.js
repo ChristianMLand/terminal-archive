@@ -8,9 +8,12 @@ $('.selectpicker').selectpicker();
 form.addEventListener('submit', e => {
     e.preventDefault();
     axios.post('/availabilities/filter', new FormData(form))
-    .then(result => {
+    .then(data => {
         tbody.innerHTML = ""
-        const results = result.data.data
+        const results = data.data
+        if (results.status == "error") {
+            return
+        }
         for (let row of results) {
             const tr = document.createElement("tr")
             const cells = [row.terminal, row.ssl, row.container, row.created_at, row.type]

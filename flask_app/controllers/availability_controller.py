@@ -28,16 +28,17 @@ def fetch_new_data():
 
     for terminal in Terminal.retrieve_all():
         data = terminal.parse()
-        # json_data = json.dumps(data, indent=4)
-        # print(terminal.name, json_data)
-        Availability.create(terminal, data)
+        if data:
+            Availability.create(terminal, data)
     return jsonify(status="success")
 
 @app.post("/availabilities/filter")
 def filter():
     if "user_id" not in session:
-        return jsonify(data=[])
+        return jsonify(status="error")
     availabilities = Availability.retrieve_all(request.form)
-    write_to_worksheet(availabilities)
-    return jsonify(data=[availability.json for availability in availabilities])
+    if availabilities:
+        write_to_worksheet(availabilities)
+        return jsonify([availability.json for availability in availabilities])
+    return jsonify(status="error")
 #----------------------------------------------------------------------------#
