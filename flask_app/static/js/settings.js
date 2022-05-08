@@ -122,7 +122,7 @@ function clearMessages() {
 function updateAccess(elem) {
     axios.post('/api/users/update', {
         "account_level" : parseInt(elem.value),
-        "id" : elem.getAttribute("data-user-id")
+        "id" : parseInt(elem.getAttribute("data-user-id"))
     })
     .then(data => {
         createMessage(accessForm, data.data)
@@ -132,7 +132,7 @@ function updateAccess(elem) {
 
 function removeAccess(elem) {
     axios.post('/api/users/delete', {
-        "id" : elem.getAttribute('data-user-id')
+        "id" : parseInt(elem.getAttribute('data-user-id'))
     })
     .then(data => {
         createMessage(accessForm, data.data)

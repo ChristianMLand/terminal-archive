@@ -38,12 +38,14 @@ class User(Model):
             if len(form_data['new_password']) < 8:
                 return False
             data = {"id" : logged_user.id}
-            if bcrypt.check_password_hash(logged_user.password_hash, form_data.get('old_password')):
-                data['password_hash'] = bcrypt.generate_password_hash(form_data.get('new_password'))
+            if bcrypt.check_password_hash(logged_user.password_hash, form_data.get('old_password', '')):
+                data['password_hash'] = bcrypt.generate_password_hash(form_data['new_password'])
                 return super().update(**data)
-        if form_data.get('account_level',3) < logged_user.account_level:
-            print("HELLO WORLD", form_data.get('account_level'))
-            return super().update(**form_data)
+        if form_data.get('account_level', 3) < logged_user.account_level:
+            print(logged_user.id, form_data)
+            if logged_user.id != form_data.get("id", logged_user.id):
+                return super().update(**form_data)
+            return False
         return False
 
     @classmethod
