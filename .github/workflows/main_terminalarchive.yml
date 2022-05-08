@@ -45,6 +45,15 @@ jobs:
     needs: build
     environment:
       name: 'Production'
+      db_name: ${{ secrets.DB_NAME }}
+      host: ${{ secrets.HOST }}
+      j_password: ${{ secrets.J_PASSWORD }}
+      j_username: ${{ secrets.J_USERNAME }}
+      owner_email: ${{ secrets.OWNER_EMAIL }}
+      owner_pw_hash: ${{ secrets.OWNER_PW_HASH }}
+      password: ${{ secrets.PASSWORD }}
+      secret_key: ${{ secrets.SECRET_KEY }}
+      user: ${{ secrets.USER }}
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -61,12 +70,4 @@ jobs:
           app-name: 'TerminalArchive'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7C11CD08FA5348FF8806A03CD6B6C1AE }}
-          db_name: ${{ secrets.DB_NAME }}
-          host: ${{ secrets.HOST }}
-          j_password: ${{ secrets.J_PASSWORD }}
-          j_username: ${{ secrets.J_USERNAME }}
-          owner_email: ${{ secrets.OWNER_EMAIL }}
-          owner_pw_hash: ${{ secrets.OWNER_PW_HASH }}
-          password: ${{ secrets.PASSWORD }}
-          secret_key: ${{ secrets.SECRET_KEY }}
-          user: ${{ secrets.USER }}
+
