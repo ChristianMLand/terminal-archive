@@ -4,9 +4,9 @@ import os
 class MySQLConnection:
     def __init__(self, db):
         self.connection = pymysql.connect(
-            host = os.getenv("host"),
-            user = os.getenv("user"), 
-            password = os.getenv("password"),#YOUR PASSWORD HERE INSTEAD OF 'root'
+            host = os.environ.get("host"),
+            user = os.environ.get("user"), 
+            password = os.environ.get("password"),#YOUR PASSWORD HERE INSTEAD OF 'root'
             db = db,
             charset = 'utf8mb4',
             cursorclass = pymysql.cursors.DictCursor,
@@ -38,12 +38,12 @@ class MySQLConnection:
 
 def create_db():
     connection = pymysql.connect(
-        host = os.getenv("host"),
-        user = os.getenv("user"),
-        password = os.getenv("password")
+        host = os.environ.get("host"),
+        user = os.environ.get("user"),
+        password = os.environ.get("password")
     )
-    connection.cursor().execute(f"CREATE DATABASE IF NOT EXISTS `{os.getenv('db_name')}`;")
-    connection.select_db(os.getenv('db_name'))
+    connection.cursor().execute(f"CREATE DATABASE IF NOT EXISTS `{os.environ.get('db_name')}`;")
+    connection.select_db(os.environ.get('db_name'))
 
     connection.cursor().execute(f"CREATE TABLE IF NOT EXISTS `users` (`id` int NOT NULL AUTO_INCREMENT,`email` varchar(255) NOT NULL,`password_hash` char(60) NOT NULL,`account_level` int NOT NULL DEFAULT '1',PRIMARY KEY (`id`),UNIQUE KEY `email_UNIQUE` (`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;")
 
@@ -56,8 +56,8 @@ def create_db():
     connection.cursor().execute("CREATE TABLE IF NOT EXISTS `availabilities` (`id` int NOT NULL AUTO_INCREMENT,`terminal_id` int NOT NULL,`container_id` int NOT NULL,`ssl_id` int NOT NULL,`created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,`type` set('Pick','Drop') NOT NULL,PRIMARY KEY (`id`),KEY `fk_partnership_has_containers_containers1_idx` (`container_id`),KEY `fk_availabilities_terminals1_idx` (`terminal_id`),KEY `fk_availabilities_ssls1_idx` (`ssl_id`),CONSTRAINT `fk_availabilities_ssls1` FOREIGN KEY (`ssl_id`) REFERENCES `ssls` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,CONSTRAINT `fk_availabilities_terminals1` FOREIGN KEY (`terminal_id`) REFERENCES `terminals` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,CONSTRAINT `fk_partnership_has_containers_containers1` FOREIGN KEY (`container_id`) REFERENCES `containers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;")
 
     try:
-        connection.cursor().execute(f"INSERT INTO `users` VALUES (1,'{os.getenv('owner_email')}','{os.getenv('owner_pw_hash')}',3);")
-        connection.cursor().execute(f"INSERT INTO `terminals` VALUES (1,'t18','{os.getenv('j_username')}','{os.getenv('j_password')}','https://t18.tideworks.com/fc-T18/j_spring_security_check',1,'https://t18.tideworks.com/fc-T18/home/default.do?method=page&id=4'),(2,'t30','{os.getenv('j_username')}','{os.getenv('j_password')}','https://t30.tideworks.com/fc-T30/j_spring_security_check',1,'https://t30.tideworks.com/fc-T30/home/default.do'),(3,'t5','{os.getenv('j_username')}','{os.getenv('j_password')}','https://t5s.tideworks.com/fc-T5S/j_spring_security_check',1,'https://t5s.tideworks.com/fc-T5S/home/default.do?method=page&id=4'),(4,'wut',NULL,NULL,NULL,0,'https://www.uswut.com/schedule/empty-receiving/'),(5,'husky',NULL,NULL,NULL,0,'https://huskyterminal.com/');")
+        connection.cursor().execute(f"INSERT INTO `users` VALUES (1,'{os.environ.get('owner_email')}','{os.environ.get('owner_pw_hash')}',3);")
+        connection.cursor().execute(f"INSERT INTO `terminals` VALUES (1,'t18','{os.environ.get('j_username')}','{os.environ.get('j_password')}','https://t18.tideworks.com/fc-T18/j_spring_security_check',1,'https://t18.tideworks.com/fc-T18/home/default.do?method=page&id=4'),(2,'t30','{os.environ.get('j_username')}','{os.environ.get('j_password')}','https://t30.tideworks.com/fc-T30/j_spring_security_check',1,'https://t30.tideworks.com/fc-T30/home/default.do'),(3,'t5','{os.environ.get('j_username')}','{os.environ.get('j_password')}','https://t5s.tideworks.com/fc-T5S/j_spring_security_check',1,'https://t5s.tideworks.com/fc-T5S/home/default.do?method=page&id=4'),(4,'wut',NULL,NULL,NULL,0,'https://www.uswut.com/schedule/empty-receiving/'),(5,'husky',NULL,NULL,NULL,0,'https://huskyterminal.com/');")
         connection.cursor().execute("INSERT INTO `containers` VALUES (1,'20DR/20SD'),(2,'20RFR/20RH'),(4,'40DH/40HC'),(3,'40DR/40SD'),(5,'40RFR/40RH'),(6,'45DH/45HC'),(7,'Special');")
         connection.cursor().execute("INSERT INTO `ssls` VALUES (1,'ANL'),(2,'APL'),(3,'CHV'),(4,'CMA'),(5,'COS'),(6,'EGL'),(7,'HAP'),(8,'HDM'),(10,'HLC'),(9,'HMM'),(11,'MAE'),(12,'MSC'),(13,'ONE'),(14,'OOCL'),(15,'PAI'),(16,'SAF'),(17,'SEA'),(18,'SMC'),(19,'SUD'),(20,'WHL'),(21,'WWS'),(22,'YML'),(23,'ZIM');")
         connection.commit()
