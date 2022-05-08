@@ -45,16 +45,6 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      env:
-        db_name: ${{ secrets.DB_NAME }}
-        host: ${{ secrets.HOST }}
-        j_password: ${{ secrets.J_PASSWORD }}
-        j_username: ${{ secrets.J_USERNAME }}
-        owner_email: ${{ secrets.OWNER_EMAIL }}
-        owner_pw_hash: ${{ secrets.OWNER_PW_HASH }}
-        password: ${{ secrets.PASSWORD }}
-        secret_key: ${{ secrets.SECRET_KEY }}
-        user: ${{ secrets.USER }}
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -63,6 +53,15 @@ jobs:
         with:
           name: python-app
           path: .
+          db_name: ${{ secrets.DB_NAME }}
+          host: ${{ secrets.HOST }}
+          j_password: ${{ secrets.J_PASSWORD }}
+          j_username: ${{ secrets.J_USERNAME }}
+          owner_email: ${{ secrets.OWNER_EMAIL }}
+          owner_pw_hash: ${{ secrets.OWNER_PW_HASH }}
+          password: ${{ secrets.PASSWORD }}
+          secret_key: ${{ secrets.SECRET_KEY }}
+          user: ${{ secrets.USER }}
           
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
