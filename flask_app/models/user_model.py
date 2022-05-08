@@ -1,5 +1,5 @@
 from flask_app.config.mysqlconnection import connectToMySQL
-from flask_app import bcrypt, DB
+from flask_app import bcrypt
 from flask import flash, session
 from flask_app.utility.utils import generate_password
 from flask_app.models.base_model import Model

@@ -130,5 +130,7 @@ dmypy.json
 
 test_queries.sql
 Pipfile.lock
-terminal_archive.mwb.bak
+terminal_arc
+terminal_archive.sql
+.env
 output.xlsx

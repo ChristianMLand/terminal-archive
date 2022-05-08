@@ -1,9 +1,12 @@
 from flask import Flask
 from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "itsasecret"
+app.secret_key = os.getenv("secret_key")
 
 bcrypt = Bcrypt(app)
 
-DB = "terminal_archive"
+DB = os.getenv("db_name")
