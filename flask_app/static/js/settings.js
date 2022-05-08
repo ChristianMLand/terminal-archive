@@ -9,6 +9,8 @@ const userList = document.querySelector("#user-list")
 
 const passwordForm = document.querySelector("#password-form")
 
+const accountLimit = userList ? userList.getAttribute("data-account-limit") : 0;
+
 terminalSelect && terminalSelect.addEventListener('change', e => {
     axios.get(`/api/terminals/${e.target.value}`)
     .then(data => {
@@ -35,19 +37,43 @@ accessForm && accessForm.addEventListener('submit', e => {
     axios.post('/api/users/create', new FormData(accessForm))
     .then(data => {
         const user = data.data;
-        console.log(user)
-        createMessage(accessForm, user)
+        createMessage(accessForm, user);
         if (user.status != "error") {
             const userLi = document.createElement("li");
             userLi.classList.add('list-group-item', 'd-flex', 'gap-4', 'justify-content-between', 'align-items-center');
-            userLi.innerHTML = `
-                <span class="me-auto w-25">${user.email}</span>
-                <select onchange="updateAccess(this)" data-user-id="${user.id}" name="account_level" class="w-25 form-select">
-                    <option value="1" selected>Basic</option>
-                    <option value="2">Admin</option>
-                </select>
-                <button onclick="removeAccess(this)" data-user-id="${user.id}" class="btn btn-sm btn-outline-danger">Remove</button>
-                `
+            
+            const span = document.createElement("span");
+            span.classList.add("me-auto", "w-25");
+            span.innerText = user.email;
+
+            const select = document.createElement("select");
+            select.classList.add("w-25", "form-select");
+            select.name = "account_level";
+            select.addEventListener("change", e => {
+                updateAccess(e.target)
+            });
+            select.setAttribute("data-user-id", user.id);
+
+            const accountLevels = ["Basic", "Admin"];
+            for (let i = 0; i < accountLevels.length && i < accountLimit; i++) {
+                const option = document.createElement("option");
+                option.innerText = accountLevels[i];
+                option.value = i + 1
+                if (accountLimit == 1) {
+                    select.disabled = true;
+                }
+                select.append(option);
+            }
+
+            const button = document.createElement("button");
+            button.setAttribute("data-user-id", user.id);
+            button.classList.add("btn", "btn-sm", "btn-outline-danger");
+            button.addEventListener("click", e => {
+                removeAccess(e.target);
+            })
+            button.innerText = "Remove";
+
+            userLi.append(span, select, button);
             userList.append(userLi);
         }
     })
@@ -58,7 +84,7 @@ passwordForm && passwordForm.addEventListener("submit", e => {
     e.preventDefault();
     axios.post("/api/users/update", new FormData(passwordForm))
     .then(data => {
-        createMessage(passwordForm, data.data)
+        createMessage(passwordForm, data.data);
     })
     .catch(console.error)
 })
@@ -98,7 +124,9 @@ function updateAccess(elem) {
         "account_level" : parseInt(elem.value),
         "id" : elem.getAttribute("data-user-id")
     })
-    .then(console.log)
+    .then(data => {
+        createMessage(accessForm, data.data)
+    })
     .catch(console.error);
 }
 
@@ -107,8 +135,8 @@ function removeAccess(elem) {
         "id" : elem.getAttribute('data-user-id')
     })
     .then(data => {
-        data = data.data;
-        if (data.status == "success") {
+        createMessage(accessForm, data.data)
+        if (data.data.status == "success") {
             elem.parentNode.remove();
         }
     })

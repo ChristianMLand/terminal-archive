@@ -18,7 +18,7 @@ def settings():
     context = {
         "logged_user" : logged_user,
         "terminals" : Terminal.retrieve_all(auth_required = 1),
-        "users" : [user for user in User.retrieve_all() if user.account_level < logged_user.account_level]
+        "users" : User.retrieve_all()
     }
     return render_template("settings.html", **context)
 #----------------------------Action Routes----------------------------------#

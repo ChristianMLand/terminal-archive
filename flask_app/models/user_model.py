@@ -42,8 +42,17 @@ class User(Model):
                 data['password_hash'] = bcrypt.generate_password_hash(form_data.get('new_password'))
                 return super().update(**data)
         if form_data.get('account_level',3) < logged_user.account_level:
+            print("HELLO WORLD", form_data.get('account_level'))
             return super().update(**form_data)
         return False
+
+    @classmethod
+    def delete(cls, **form_data):
+        logged_user = User.retrieve_one(id=session['user_id'])
+        to_delete = User.retrieve_one(id=form_data.get("id"))
+        if logged_user.account_level <= to_delete.account_level:
+            return False
+        return super().delete(**form_data)
 
     @staticmethod
     def validate(data):

@@ -27,3 +27,5 @@ This project scrapes several shipping terminal websites, stores the data in a My
     - update the authentication credentials for the different terminal websites
 - Able to change password
 -------------
+TODO
+Rewrite with next.js and vercel??

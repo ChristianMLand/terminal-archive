@@ -30,17 +30,19 @@
                 </div>
             </form>
             <p>Users with access</p>
-            <ul id="user-list" class="list-group">
-                {% set levels = ["Basic", "Admin"] %}
+            <ul id="user-list" data-account-limit={{logged_user.account_level - 1}} class="list-group">
+                {% set levels = ["Basic", "Admin", "Owner"] %}
                 {% for user in users %}
                 <li class="list-group-item d-flex gap-4 align-items-center">
                     <span class="me-auto w-25">{{user.email}}</span>
-                    <select onchange="updateAccess(this)" data-user-id="{{user.id}}" name="account_level" class="w-25 form-select">
-                        {% for i in range(logged_user.account_level - 1) %}
+                    <select {{"disabled" if user.account_level >= logged_user.account_level or logged_user.account_level < 3}} onchange="updateAccess(this)" data-user-id="{{user.id}}" name="account_level" class="w-25 form-select">
+                        {% for i in range(3) %}
+                        {% if user.account_level >= logged_user.account_level or (logged_user.id != user.id and i < logged_user.account_level - 1) %}
                         <option value="{{i + 1}}" {{"selected" if user.account_level == i + 1}}>{{levels[i]}}</option>
+                        {% endif %}
                         {% endfor %}
                     </select>
-                    <button onclick="removeAccess(this)" data-user-id="{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</button>
+                    <button {{"disabled" if user.account_level >= logged_user.account_level or logged_user.account_level < 2}} onclick="removeAccess(this)" data-user-id="{{user.id}}" class="btn btn-sm btn-outline-danger">Remove</button>
                 </li>
                 {% endfor %}
             </ul>

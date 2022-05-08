@@ -1,4 +1,3 @@
-import json
 from flask import jsonify, render_template, session, request
 from flask_app import app
 from flask_app.models.terminal_model import Terminal
