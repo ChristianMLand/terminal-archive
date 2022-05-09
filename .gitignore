@@ -134,3 +134,4 @@ terminal_arc
 terminal_archive.sql
 .env
 output.xlsx
+.vscode/

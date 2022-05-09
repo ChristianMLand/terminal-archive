@@ -9,4 +9,4 @@ app.secret_key = os.environ.get("secret_key")
 
 bcrypt = Bcrypt(app)
 
-DB = os.getenv("db_name")
+DB = os.environ.get("db_name")
