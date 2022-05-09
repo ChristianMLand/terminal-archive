@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'TerminalArchive'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_964EF437300A43418026305A9C87146F }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_347E9A897FD14CC58B3229F8A4864DE1 }}
