@@ -1,4 +1,4 @@
-from flask import jsonify, render_template, session, request
+from flask import jsonify, render_template, session, request, flash, redirect
 from flask_app import app
 from flask_app.models.terminal_model import Terminal
 from flask_app.models.ssl_model import SSL
@@ -78,7 +78,9 @@ def delete_item(type):
         return jsonify(status="error")
     return jsonify(status="success")
 #------------------------------------------------------------------------------#
-@app.get("/<catch>")
+@app.route("/<path:catch>", methods=['GET','POST'])
 def catch_all(catch):
     print(f"User id={session.get('user_id')} attempted connection to {catch}")
-    return render_template("404.html")
+    flash("Error: Something went wrong")
+    return redirect("/")
+    # return render_template("404.html")

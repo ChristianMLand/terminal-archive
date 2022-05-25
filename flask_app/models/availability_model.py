@@ -1,6 +1,7 @@
 from flask_app.config.mysqlconnection import connectToMySQL
 from flask_app.models import container_model, ssl_model 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, timezone
+
 
 class Availability:
     def __init__(self, data):
@@ -8,7 +9,8 @@ class Availability:
         self.terminal = data.get('name')
         self.container = data.get('size')
         self.ssl = data.get('ssls.name')
-        self.created_at = data.get('created_at')
+        self.first_available = data.get('first_available')
+        self.last_available = data.get('last_available')
         self.type = data.get('type')
 
     @classmethod
@@ -16,12 +18,29 @@ class Availability:
         data = {}
         query = '''
                 SELECT 
-                availabilities.id, 
-                terminals.name, ssls.name, 
-                containers.size, 
-                availabilities.created_at, 
-                availabilities.type
-                FROM availabilities
+                availabilities.id,
+                availabilities.type,
+                terminals.name, 
+                ssls.name, 
+                containers.size,
+                MIN(created_at) AS "first_available", 
+                MAX(created_at) AS "last_available"
+                FROM (
+                    SELECT 
+                    availabilities.*,
+                    @group_num := IF(
+                        @prev_terminal_id != terminal_id OR @prev_ssl_id != ssl_id OR @prev_container_id != container_id OR @prev_type != type, 
+                        @group_num + 1,
+                        @group_num
+                    ) AS gn,
+                    @prev_terminal_id := terminal_id,
+                    @prev_container_id := container_id,
+                    @prev_ssl_id := ssl_id,
+                    @prev_type := type
+                    FROM availabilities,
+                    (SELECT @group_num := 0, @prev_terminal_id := NULL, @prev_container_id := NULL, @prev_ssl_id := NULL, @prev_type := NULL) var_init_subquery
+                    ORDER BY terminal_id, ssl_id, container_id, created_at
+                ) availabilities
                 JOIN terminals ON terminals.id = terminal_id
                 JOIN ssls ON ssls.id = ssl_id
                 JOIN containers ON containers.id = container_id
@@ -44,7 +63,7 @@ class Availability:
             if key not in ['type','start_date','end_date']:
                 wheres += f"AND {key} in (%({key})s) "
         query += wheres
-        query += "ORDER BY created_at DESC;"
+        query += "GROUP BY gn, terminal_id, ssl_id, container_id, type ORDER BY created_at DESC;"
         results = connectToMySQL("terminal_archive").query_db(query, data)
         if results:
             return [cls(row) for row in results]
@@ -76,6 +95,7 @@ class Availability:
             "terminal" : self.terminal,
             "container" : self.container,
             "ssl" : self.ssl,
-            "created_at" : self.created_at,
+            "first_available" : self.first_available,
+            "last_available" : self.last_available,
             "type" : self.type
         }

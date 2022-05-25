@@ -5,6 +5,20 @@ const actions = document.querySelector("main")
 
 $('.selectpicker').selectpicker();
 
+function convertTZ(date, tzString) {
+    return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {timeZone: tzString}));   
+}
+
+(() => {
+    let today = new Date()
+    today.setUTCHours(today.getUTCHours() - 7)
+    today.setUTCHours(0)
+    today.setUTCMinutes(0)
+    today.setUTCMilliseconds(0)
+    today.setUTCSeconds(0)
+    document.querySelector("input[name=start_date]").value = today.toISOString().substring(0,16)
+})()
+
 form.addEventListener('submit', e => {
     e.preventDefault();
     axios.post('/availabilities/filter', new FormData(form))
@@ -16,10 +30,18 @@ form.addEventListener('submit', e => {
         }
         for (let row of results) {
             const tr = document.createElement("tr")
-            const cells = [row.terminal, row.ssl, row.container, row.created_at, row.type]
-            for (let cell of cells) {
+            const cells = [row.terminal, row.ssl, row.container, row.first_available, row.last_available, row.type]
+            for (let i = 0; i < cells.length; i++) {
                 const td = document.createElement("td");
-                td.innerText = cell;
+                const cell = cells[i];
+                if (i === 3 || i === 4) {
+                    console.log(cell);
+                    const cellDate = convertTZ(cell, "America/Los_Angeles")
+                    cellDate.setUTCHours(cellDate.getUTCHours() + 7)
+                    td.innerText = cellDate
+                } else {
+                    td.innerText = cell;
+                }
                 tr.append(td);
             }
             tbody.append(tr);

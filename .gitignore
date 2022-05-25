@@ -128,10 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-test_queries.sql
+.sql
 Pipfile.lock
 terminal_arc
 terminal_archive.sql
 .env
 output.xlsx
 .vscode/
+
+debug.txt

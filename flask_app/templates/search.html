@@ -7,10 +7,12 @@
 {% block main %}
 <main class="d-flex col-10 mx-auto flex-column align-items-center justify-content-center">
     <div id="actions" class="mb-3 d-flex gap-4">
+        {% if logged_user.account_level > 1 %}
         <button class="btn btn-outline-danger">Fetch Current Data</button>
+        {% endif %}
         <a href="{{url_for('static', filename='output.xlsx')}}" target="_blank" class="btn btn-outline-info">Download as Excel</a>
     </div>
-    <form action="filter" method="post" class="row row-cols-lg-auto g-3 align-items-center justify-content-center">
+    <form action="/availabilities/filter" method="post" class="row row-cols-lg-auto g-3 align-items-center justify-content-center">
         <div class="col">
             <select name="terminal_id" class="selectpicker border" multiple title="Terminals" data-actions-box="true">
                 {% for terminal in terminals %}
@@ -47,13 +49,17 @@
             <button type="submit" class="btn btn-outline-primary">Search</button>
         </div>
     </form>
+    {% for msg in get_flashed_messages() %}
+    <p class="alert alert-danger m-3">{{msg}}</p>
+    {% endfor %}
     <table class="table table-hover table-bordered mt-3 w-75">
         <thead>
             <tr>
                 <th>Terminal</th>
                 <th>SSL</th>
                 <th>Container Size</th>
-                <th>Available During</th>
+                <th>First Available</th>
+                <th>Last Available</th>
                 <th>Available For</th>
             </tr>
         </thead>

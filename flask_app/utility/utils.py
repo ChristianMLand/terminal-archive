@@ -9,8 +9,8 @@ def generate_password():
         gen_pass += choice(characters)
     return gen_pass
 
-def write_to_worksheet(data):
-    workbook = xlsxwriter.Workbook("flask_app/static/output.xlsx")
+def write_to_worksheet(data, name):
+    workbook = xlsxwriter.Workbook(f"flask_app/static/output/{name}.xlsx")
     worksheet = workbook.add_worksheet("Search Results")
     border = workbook.add_format({"border" : 1, "align" : "center"})
     gray = workbook.add_format({
@@ -23,7 +23,8 @@ def write_to_worksheet(data):
         "Terminal" : None,
         "SSL" : None,
         "Container Size" : None,
-        "Available During" : None,
+        "First Available" : None,
+        "Last Available" : None,
         "Available For" : None
     }
     for i, key in enumerate(row):
@@ -32,7 +33,8 @@ def write_to_worksheet(data):
         row['Terminal'] = availability.terminal
         row['SSL'] = availability.ssl
         row['Container Size'] = availability.container
-        row['Available During'] = availability.created_at
+        row['First Available'] = availability.first_available
+        row['Last Available'] = availability.last_available
         row['Available For'] = availability.type
         for j, key in enumerate(row):
             value = str(row[key])

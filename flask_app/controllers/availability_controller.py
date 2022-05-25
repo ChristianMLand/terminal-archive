@@ -20,6 +20,7 @@ def search():
         "logged_user" : User.retrieve_one(id=session['user_id'])
     }
     return render_template("search.html", **context)
+#--------------------------------------------------------------------------#
 #-------------------------Action Routes------------------------------------#
 @app.get("/availabilites/fetch")
 def fetch_new_data():
@@ -38,7 +39,7 @@ def filter():
         return jsonify(status="error")
     availabilities = Availability.retrieve_all(request.form)
     if availabilities:
-        write_to_worksheet(availabilities)
+        write_to_worksheet(availabilities, name=session['user_id'])
         return jsonify([availability.json for availability in availabilities])
     return jsonify(status="error")
 #----------------------------------------------------------------------------#
